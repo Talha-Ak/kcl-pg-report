@@ -1,0 +1,34 @@
+{
+    "name": "LaTeX",
+    "build": { "dockerfile": "Dockerfile" },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "james-yu.latex-workshop",
+                "shardulm94.trailing-spaces",
+                "valentjn.vscode-ltex",
+                "stkb.rewrap"
+            ],
+            "settings": {
+                "latex-workshop.linting.chktex.enabled": false,
+                "latex-workshop.linting.chktex.exec.path": "chktex",
+                "latex-workshop.synctex.afterBuild.enabled": true,
+                "latex-workshop.view.pdf.viewer": "tab",
+                "latex-workshop.latex.clean.subfolder.enabled": true,
+                "latex-workshop.linting.chktex.exec.args": [
+                    "-wall",
+                    "-n1",
+                    "-n8",
+                    "-n22",
+                    "-n30",
+                    "-e16",
+                    "-q"
+                ],
+                "latex-workshop.latex.autoClean.run": "onBuilt",
+                "latex-workshop.latex.pdfWatch.delay": 500,
+                "editor.rulers": [ 100 ],
+                "ltex.language": "en-GB"
+            }
+        }
+    }
+}
