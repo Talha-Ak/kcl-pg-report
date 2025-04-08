@@ -66,7 +66,7 @@
         \textbf{Degree Programme:} \@degree\\
         \textbf{Project Title:} \@title\\
         \textbf{Supervisor:} \@supervisor\\
-        \textbf{Word Count:} \@wordcount
+        \textbf{Word Count:} \input{|"texcount -inc -sum -0 -template={SUM} \jobname.tex"}
     \end{doublespace}
 }
 
