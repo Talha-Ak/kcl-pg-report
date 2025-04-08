@@ -1,6 +1,8 @@
 FROM registry.gitlab.com/islandoftex/images/texlive:TL2025-2025-03-30-basic
 
 RUN apt-get update -q && \
+    # ssh client
+    apt-get install -qy --no-install-recommends openssh-client && \
     # inkscape
     apt-get install -qy --no-install-recommends inkscape && \
     # latexindent deps
