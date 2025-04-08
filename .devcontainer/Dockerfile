@@ -1,5 +1,4 @@
-FROM texlive/texlive:latest-basic
-ARG TEXLIVE_VERSION=2024
+FROM registry.gitlab.com/islandoftex/images/texlive:TL2025-2025-03-30-basic
 
 RUN apt-get update -q && \
     # inkscape
@@ -9,7 +8,7 @@ RUN apt-get update -q && \
     # clean files
     rm -rf /var/lib/apt/lists/* && apt-get clean
 
-ENV PATH ${PATH}:/usr/local/texlive/${TEXLIVE_VERSION}/bin/x86_64-linux
+ENV PATH ${PATH}:/usr/local/texlive/2025/bin/x86_64-linux
 
 # Tooling
 RUN tlmgr install \
