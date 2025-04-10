@@ -1,8 +1,22 @@
-\documentclass[]{kcl-thesis}
-\usepackage{microtype}
-\usepackage{hyperref}
-\usepackage{biblatex}
+\documentclass[
+% release, % Uncomment to agree to project release
+]{kcl-thesis}
 
+\usepackage[bibstyle=ieee, citestyle=numeric-comp]{biblatex}
+\addbibresource{report.bib}
+\nocite{*}
+
+\usepackage{microtype}
+
+\usepackage[pdfusetitle, hidelinks]{hyperref}
+\hypersetup{
+	colorlinks,
+	linkcolor={red!50!black},
+	citecolor={blue!50!black},
+	urlcolor={blue!80!black}
+}
+
+%TC:ignore
 \title{Conformal Prediction for Reliable Machine Learning}
 \author{Talha Abdulkuddus}
 \studentnumber{20076327}
@@ -10,10 +24,24 @@
 \supervisor{Dr.\ Nicola Paoletti}
 
 \begin{document}
+
 \maketitle
+
+\setcounter{page}{2}
+\pagenumbering{roman}
 
 \include{tex/acknowledgements}
 \include{tex/abstract}
 \include{tex/nomenclature}
+\tableofcontents
+
+\newpage
+\pagenumbering{arabic}
+%TC:endignore
+
 \include{tex/introduction}
+\include{tex/background}
+
+\printbibliography[heading=bibintoc]
+
 \end{document}
