@@ -4,6 +4,9 @@
 # Hide signature
 /figures/signature.svg
 
+# Generated word count
+/words.sum
+
 ### LaTeX ###
 ## Core latex/pdflatex auxiliary files:
 *.aux

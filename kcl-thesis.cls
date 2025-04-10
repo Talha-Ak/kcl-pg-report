@@ -1,25 +1,30 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{kcl-thesis}[2024/12/26 KCL MSc Thesis Class by Talha Abdulkuddus]
+\LoadClass[11pt,a4paper]{report}
 
-% Release option
+%===========================================================
+%   Release Toggle
+%===========================================================
+
 \newif\if@release
 \@releasefalse
 \DeclareOption{release}{\@releasetrue}
 \ProcessOptions\relax
 
-\LoadClass[11pt,a4paper]{report}
+%===========================================================
+%   Packages
+%===========================================================
 
-% Required packages
 \usepackage[british]{babel} % For British English hyphenation
 \usepackage{csquotes}       % For quoting
 
-\usepackage{amssymb}       % For checkbox symbols
+\usepackage{amssymb}        % For checkbox symbols
 
 \RequirePackage{graphicx}   % For image handling
 \RequirePackage{svg}        % For SVG image handling
 \graphicspath{{figures/}}   % Set the path to the images directory
 
-\RequirePackage{tcolorbox}   % For release notice
+\RequirePackage{tcolorbox}  % For release notice
 
 \RequirePackage[
     margin=1.5cm,           % Set 1.5cm margins on all sides
@@ -30,16 +35,27 @@
 \RequirePackage{setspace}   % For line spacing control
 \singlespacing              % Set line spacing to single
 
+%===========================================================
+%   Options
+%===========================================================
+
 \newcommand*{\studentnumber}[1]{\def\@studentnumber{#1}}
 \newcommand*{\degree}[1]{\def\@degree{#1}}
 \newcommand*{\supervisor}[1]{\def\@supervisor{#1}}
-\newcommand*{\wordcount}[1]{\def\@wordcount{#1}}
 
-% Initialize empty values
-\def\@studentnumber{\texttt{\textbackslash studentnumber}}
-\def\@degree{\texttt{\textbackslash degree}}
-\def\@supervisor{\texttt{\textbackslash supervisor}}
-\def\@wordcount{\texttt{\textbackslash wordcount}}
+
+% Initialise variables
+\def\@studentnumber{\texttt{\textbackslash studentnumber\{your student number\}}}
+\def\@degree{\texttt{\textbackslash degree\{your degree\}}}
+\def\@supervisor{\texttt{\textbackslash supervisor\{your supervisor\}}}
+\def\@wordcount{%
+  \immediate\write18{texcount -relaxed -inc -sum -1 \jobname.tex > words.sum }%
+  \input{words.sum}%
+}
+
+%===========================================================
+%   Title Page
+%===========================================================
 
 \def\@leftheader{
     {\textbf{Faculty of Natural, Mathematical and Engineering Sciences}}\\
@@ -50,6 +66,26 @@
     King's College London\\
     Strand Campus, London\\
     United Kingdom
+}
+
+\def\@titlepageheader{
+    \begin{minipage}[t]{0.3\textwidth}
+        \raggedright
+        \vspace{0pt}
+        \@leftheader
+    \end{minipage}%
+    \hfill%
+    \begin{minipage}[t]{0.3\textwidth}
+        \raggedright
+        \vspace{0pt}
+        \@centerheader
+    \end{minipage}%
+    \hfill%
+    \begin{minipage}[t]{0.3\textwidth}
+        \raggedleft
+        \vspace{0pt}
+        \includesvg[height=2.25cm]{kcl-logo}
+    \end{minipage}
 }
 
 \def\@reportheader{
@@ -66,7 +102,7 @@
         \textbf{Degree Programme:} \@degree\\
         \textbf{Project Title:} \@title\\
         \textbf{Supervisor:} \@supervisor\\
-        \textbf{Word Count:} \input{|"texcount -inc -sum -0 -template={SUM} \jobname.tex"}
+        \textbf{Word Count:} \@wordcount
     \end{doublespace}
 }
 
@@ -81,21 +117,7 @@
 \renewcommand{\maketitle}{
     \begin{titlepage}
         \noindent
-        \begin{minipage}[t]{0.3\textwidth}
-            \vspace{0pt}
-            \raggedright
-            \@leftheader
-        \end{minipage}%
-        \begin{minipage}[t]{0.4\textwidth}
-            \vspace{0pt}
-            \raggedright
-            \@centerheader
-        \end{minipage}%
-        \begin{minipage}[t]{0.3\textwidth}
-            \vspace{0pt}
-            \raggedleft
-            \includesvg[height=2.25cm]{kcl-logo}
-        \end{minipage}
+        \@titlepageheader
         \vspace*{2cm}
         \@reportheader
         \vspace*{1cm}
@@ -104,12 +126,11 @@
         \@projectnotice
         \vspace*{0.5cm}
         \begin{doublespace}
+            \noindent
             \if@release
-                \noindent
                 $\boxtimes$ I \textbf{agree} to the release of my project\\
                 $\square$ I \textbf{do not} agree to the release of my project
             \else
-                \noindent
                 $\square$ I \textbf{agree} to the release of my project\\
                 $\boxtimes$ I \textbf{do not} agree to the release of my project
             \fi
@@ -123,33 +144,24 @@
 
     \begin{titlepage}
         \noindent
-        \begin{minipage}[t]{0.3\textwidth}
-            \vspace{0pt}
-            \raggedright
-            \@leftheader
-        \end{minipage}%
-        \begin{minipage}[t]{0.4\textwidth}
-            \vspace{0pt}
-            \raggedright
-            \@centerheader
-        \end{minipage}%
-        \begin{minipage}[t]{0.3\textwidth}
-            \vspace{0pt}
-            \raggedleft
-            \includesvg[height=2.25cm]{kcl-logo}
-        \end{minipage}
+        \@titlepageheader
         \vspace*{2cm}
         \begin{center}
             {\Large \textbf{7CCSMPRJ} MSc Report}
-            % \vspace*{0.5cm}
+        \end{center}
+        \begin{center}
+            \hrulefill
+            \vspace*{0.5cm}
             \begin{spacing}{2.5}
                 {\Huge \textbf{\@title}}
-            \end{spacing}
+            \end{spacing}%
+            \hrulefill
         \end{center}
         \begin{flushleft}
             \begin{doublespace}
                 \Large
-                \textbf{Name:} \@author\\
+                \textbf{Name:}
+                \@author\\
                 \textbf{Student Number:} \@studentnumber\\
                 \textbf{Degree Programme:} \@degree\\
             \end{doublespace}
