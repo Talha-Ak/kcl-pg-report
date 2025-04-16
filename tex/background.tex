@@ -1,0 +1,28 @@
+\chapter{Background}
+\label{ch:background}
+
+\section{Machine Learning on CXRs}
+
+\section{Conformal Prediction}
+
+1. Identify some heuristic of uncertainty from the pre-trained model.
+   E.g. if it's a NN with a softmax output, that output in itself is a heuristic of the model's confidence.
+
+2. Define some score function $s(x,y) \in \mathbb{R}$, where a larger score means a worse agreement between $x$ and $y$.
+   E.g. For a softmax output, a score fn would be 1 - the output, i.e. how unconfident it is.
+
+3. Compute $\hat q = \frac{\lceil (n+1) (1- \alpha) \rceil}{n}$ quantile of the calibration scores on a calibration dataset.
+   E.g. for $\alpha=0.1$, find the 90\% quantile.
+
+4. Use the quantile to make prediction sets: $\mathcal{C}(X_{test}) = \{y: s(X_{test}, y) \leq \hat q\}$
+   This guarantees that it's at least $1 - \alpha$ coverage, and almost exactly that coverage.
+   $$
+   1 - \alpha \leq \mathbb{P}(Y_{test} \in \mathcal{C}(X_{test})) \leq 1 - \alpha + \frac{1}{n+1}
+   $$
+   E.g. $90\% \leq \mathcal{C} \leq 91\%$
+
+\subsection{Evaluating Sets}
+
+\section{Conformal Risk Control}
+
+\subsection{LTT}

@@ -1,1 +1,54 @@
 \chapter{Introduction}
+\label{ch:introduction}
+
+Black-box machine learning models are increasingly being integrated
+into high-impact real-world settings, with healthcare being a prominent example.
+These technologies hold the potential to enhance diagnostic accuracy,
+improve workflow efficiency, and support clinical decision-making.
+However, in such safety-critical environments,
+it is essential not only to evaluate predictive performance
+but also to quantify model uncertainty in a meaningful way.
+
+Standard evaluation metrics often fall short
+by primarily focusing on point predictions
+and lacking the ability to express the model's confidence in its outputs.
+This lack of calibrated uncertainty can be especially problematic in domains where
+incorrect decisions carry severe consequences for patient health.
+For example, in medical imaging tasks involving multi-label classification,
+a single image may present multiple conditions,
+increasing the complexity of delivering reliable assessments.
+In such scenarios, understanding and managing uncertainty
+is essential for building trustworthy AI systems.
+
+Addressing the critical need for dependable confidence measures
+falls under the domain of Uncertainty Quantification (UQ).
+Within this field, Conformal Prediction (CP) stands out as a particularly appealing framework.
+It offers a mathematically rigorous yet highly flexible approach
+that can work with virtually any underlying machine learning model.
+Rather than committing to a single prediction,
+CP generates prediction sets-a range or set of possible outcomes-
+accompanied by a guarantee that the true outcome will be contained
+within the set with a user-specified probability (e.g., 90\%).
+This model-agnostic nature makes CP especially useful for
+enhancing the reliability of complex black-box systems,
+without requiring changes to the underlying architecture.
+
+While the coverage guarantees provided by standard CP are broadly useful,
+critical applications like medical diagnosis
+often demand more nuanced control over potential errors.
+In many clinical situations, certain types of mistakes-
+such as failing to detect an existing condition (a false negative)-
+are far more detrimental than others.
+Conformal Risk Control (CRC) extends the core ideas of CP to address this need.
+Rather than providing blanket coverage guarantees,
+CRC enables practitioners to control the average rate of specific,
+user-defined errors that align with domain-specific priorities.
+This ability to tailor uncertainty quantification to clinically meaningful risk types
+makes CRC a particularly compelling solution for safety-critical settings.
+
+Recognizing the potential of CRC to provide more meaningful safety assurances in clinical settings,
+this project investigates the application of Conformal Risk Control
+to multi-label classification tasks within medical imaging.
+The goal is to explore its effectiveness in managing diagnostic risks
+in a way that aligns more closely with clinical needs than traditional
+evaluation metrics or standard uncertainty quantification approaches.
