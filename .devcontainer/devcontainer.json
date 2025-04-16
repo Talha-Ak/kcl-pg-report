@@ -25,6 +25,7 @@
                     "-q"
                 ],
                 "latex-workshop.latex.autoClean.run": "onBuilt",
+                "latex-workshop.latex.autoBuild.run": "onSave",
                 "latex-workshop.latex.pdfWatch.delay": 500,
                 "editor.rulers": [ 100 ],
                 "ltex.language": "en-GB"
