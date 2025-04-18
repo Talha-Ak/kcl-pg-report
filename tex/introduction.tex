@@ -14,41 +14,164 @@ by primarily focusing on point predictions
 and lacking the ability to express the model's confidence in its outputs.
 This lack of calibrated uncertainty can be especially problematic in domains where
 incorrect decisions carry severe consequences for patient health.
-For example, in medical imaging tasks involving multi-label classification,
-a single image may present multiple conditions,
-increasing the complexity of delivering reliable assessments.
-In such scenarios, understanding and managing uncertainty
-is essential for building trustworthy AI systems.
+For instance, the interpretation of chest X-rays (CXRs)
+is inherently a multi-label classification problem,
+as a single radiograph may exhibit multiple concurrent findings.
+In this context, standard classification accuracy often fails to capture the clinical nuances;
+failing to detect a critical condition like Pleural Effusion (fluid build-up around the lungs),
+for example, can have far more severe consequences than
+incorrectly identifying the presence of Pulmonary Nodules (small lumps in the lungs).
+As a result, developing trustworthy AI tools for CXR analysis
+requires methods that go beyond simple accuracy
+and allow for the control of specific, clinically relevant risks.
+
+Furthermore, when a radiologist incorporates a machine learning model into their decision process,
+they typically consider only the model's outputs.
+Any misleading or overconfident predictions could directly influence clinical decisions.
+Understanding not just what the model predicts, but also how confident it is, becomes crucial.
+A system that transparently expresses uncertainty
+can help a radiologist calibrate their trust in the model,
+weigh its suggestions appropriately, and potentially catch errors,
+thereby reducing diagnostic oversight, particularly in complex or ambiguous cases.
 
 Addressing the critical need for dependable confidence measures
 falls under the domain of Uncertainty Quantification (UQ).
-Within this field, Conformal Prediction (CP) stands out as a particularly appealing framework.
+Within this field, Conformal Prediction (CP) [cite] stands out as a particularly appealing framework.
 It offers a mathematically rigorous yet highly flexible approach
 that can work with virtually any underlying machine learning model.
 Rather than committing to a single prediction,
 CP generates prediction sets-a range or set of possible outcomes-
 accompanied by a guarantee that the true outcome will be contained
 within the set with a user-specified probability (e.g., 90\%).
+It has been shown that presenting prediction sets with such calibrated coverage guarantees
+can improve human classification performance [cite], offering a valuable safety margin.
 This model-agnostic nature makes CP especially useful for
 enhancing the reliability of complex black-box systems,
 without requiring changes to the underlying architecture.
 
-While the coverage guarantees provided by standard CP are broadly useful,
+While the general coverage guarantees provided by standard CP are broadly useful,
 critical applications like medical diagnosis
 often demand more nuanced control over potential errors.
-In many clinical situations, certain types of mistakes-
-such as failing to detect an existing condition (a false negative)-
+As highlighted in the CXR example, certain types of mistakes—
+such as failing to detect an existing condition (a false negative)—
 are far more detrimental than others.
-Conformal Risk Control (CRC) extends the core ideas of CP to address this need.
+Conformal Risk Control (CRC) [cite] extends the core ideas of CP to address this need.
 Rather than providing blanket coverage guarantees,
-CRC enables practitioners to control the average rate of specific,
-user-defined errors that align with domain-specific priorities.
-This ability to tailor uncertainty quantification to clinically meaningful risk types
-makes CRC a particularly compelling solution for safety-critical settings.
+CRC enables practitioners to control the average rate of specific, user-defined errors
+that align with domain-specific priorities.
+CRC is particularly well-suited for this challenge
+because its ability to control the expected value of a user-defined monotone loss function
+enables direct management of metrics like the False Negative Rate (FNR),
+which measures the proportion of true findings missed by the model.
+Minimizing expected FNR aligns directly with the clinical imperative to avoid missed diagnoses.
 
+This ability to tailor uncertainty quantification to clinically meaningful risk types
+makes CRC a particularly compelling solution for safety-critical settings
+like medical image analysis.
 Recognizing the potential of CRC to provide more meaningful safety assurances in clinical settings,
 this project investigates the application of Conformal Risk Control
-to multi-label classification tasks within medical imaging.
-The goal is to explore its effectiveness in managing diagnostic risks
-in a way that aligns more closely with clinical needs than traditional
-evaluation metrics or standard uncertainty quantification approaches.
+to multi-label classification tasks within Chest X-ray imaging.
+
+\section{Research Aims \& Objectives}
+\label{sec:aims-objectives}
+
+The primary aims of this report are to:
+
+\begin{enumerate}
+    \item \textbf{Implement and evaluate CRC across a variety of models.} \\
+    This project aims to implement Conformal Risk Control (CRC)
+    on a range of deep learning architectures,
+    including the official CheXpert model, ResNet50, and DenseNet121.
+    These models will be trained and/or fine-tuned on common chest X-ray datasets
+    such as CheXpert and NIH ChestX-ray14.
+    The implementation will explore the practicality of applying CRC
+    in a multi-label classification setting.
+    If time permits, it may also include a baseline comparison using
+    standard Conformal Prediction (CP).
+
+    \item \textbf{Evaluate CRC's ability to quantify model uncertainty across datasets.} \\
+    The project will assess how well CRC captures and expresses model uncertainty
+    across different datasets.
+    This includes evaluating the calibration quality of the generated prediction sets,
+    as well as the generalizability of CRC's uncertainty guarantees between datasets
+    (e.g., training on CheXpert and evaluating on NIH).
+    Metrics such as set size, coverage rates,
+    and empirical risk will be used to quantify performance.
+
+    \item \textbf{Evaluate CRC's ability to control clinically significant risks.} \\
+    A key objective is to determine how effectively CRC can be used
+    to control relevant metrics such as the False Negative Rate (FNR),
+    particularly for high-risk conditions (e.g., Pleural Effusion, Cardiomegaly).
+    The ability to enforce constraints on specific types of error,
+    while still maintaining useful coverage, will be examined.
+    Comparisons to standard CP and uncalibrated baselines will help assess CRC's practical benefits
+    in safety-critical diagnostic tasks.
+\end{enumerate}
+
+
+% PRELIMINARY REPORT SPECIFICS
+
+
+\begin{tcolorbox}
+    NOTE: I did mention during the last meeting other loss functions (e.g. FDR)
+    that I would also try. However, I clearly did not read the paper(s) clearly
+    enough. CRC only controls risk for monotone loss functions that are
+    non-increasing as a function of \(\lambda\). (\(\lambda\) being how
+    conservative the outputs will be; bigger \(\lambda \to\) bigger prediction
+    sets.) FDR is not. This confusion probably came from the LTT paper [cite]
+    which \emph{does} control for non-monotone risks. Implementing LTT is most
+    likely out of scope for this project, so I have restrained the project to
+    looking for other monotone, non-increasing functions to test.
+\end{tcolorbox}
+
+\subsection{Research Questions}
+
+This project is guided by the following research questions:
+
+\begin{itemize}
+    \item How well does Conformal Risk Control (CRC) calibrate uncertainty
+    in multi-label chest X-ray classification tasks?
+
+    \item How does the effect of CRC (and the produced conformal scores)
+    vary across different model architectures?
+
+    \item Can CRC be used to target specific clinically meaningful risks,
+    such as minimizing the False Negative Rate (FNR) for high-priority pathologies?
+
+    \item How does the choice of loss function (e.g., class-weighted loss)
+    impact the effectiveness of CRC in controlling specific types of risk?
+
+    \item How robust is CRC to distribution shifts?
+
+    \item (If time permits) How does CRC compare to standard Conformal Prediction (CP)
+    and uncalibrated models in terms of uncertainty quantification and error control?
+\end{itemize}
+
+\subsection{Experimental Design}
+
+The experimental design for this project will involve the following components:
+
+\begin{itemize}
+    \item \textbf{Datasets:} CheXpert [cite] and NIH ChestX-ray14 [cite] are large-scale,
+    publicly available chest X-ray datasets with multi-label annotations.
+    These provide diverse distributions to evaluate robustness and generalization.
+
+    \item \textbf{Models:} ResNet50, DenseNet121, and the official CheXpert model will be used to
+    evaluate CRC. These models are widely used in the literature and provide a good baseline for
+    comparison.
+
+    \item \textbf{Metrics:} Evaluate predictive performance,
+    calibration quality (coverage vs. target, prediction set size),
+    and risk control (e.g. FNR) across different models and datasets.
+    A focus on high-risk labels (e.g., Pleural Effusion, Pneumonia) when evaluating risk control.
+
+    \item \textbf{Risk functions:}
+    Experiment with different loss functions and risk definitions (e.g., class-specific FNRs)
+    to study how they influence the behaviour of CRC and the generated prediction sets on this task.
+\end{itemize}
+
+The \texttt{torchxrayvision} library will be used to load the datasets and preprocess the images.
+This library provides a convenient interface for loading and transforming chest X-ray images,
+including resizing, normalization, and data augmentation.
+The models will run under \texttt{pytorch},
+a popular deep learning framework for machine learning and computer vision tasks.
