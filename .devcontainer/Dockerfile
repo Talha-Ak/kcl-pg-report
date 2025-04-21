@@ -34,20 +34,21 @@ RUN tlmgr install \
 # Nice to have
 RUN tlmgr install \
     tcolorbox \
+    pgfgantt \
     && texhash
 
-# RUN tlmgr install \
+RUN tlmgr install \
 #     datetime2 datetime2-english \
 #     # formatting
 #     listings \
 #     # tcolorbox
 #     pdfcol tikzfill \
 #     # standalone
-#     standalone filehook svn-prov \
+    standalone filehook svn-prov \
 #     # minted
 #     minted fancyvrb upquote \
 #     # BNF syntax
 #     mdwtools \
 #     # other
 #     booktabs \
-#     && texhash
+    && texhash

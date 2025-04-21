@@ -1,0 +1,19 @@
+\documentclass{standalone}
+\usepackage{pgfgantt}
+
+\begin{document}
+
+\begin{ganttchart}[]{1}{16}
+    \gantttitle{May}{4}
+    \gantttitle{Jun}{4}
+    \gantttitle{Jul}{4}
+    \gantttitle{Aug}{4} \\
+    \ganttbar{Lit. Review}{3}{4} \\
+    \ganttbar{Experiments \& Evaluation}{5}{8} \\
+    \ganttbar{Analysis \& Comparison}{8}{10} \\
+    \ganttbar{Presentation Prep}{11}{12} \\
+    \ganttbar{Report Writing}{11}{13} \\
+    \ganttvrule{Deadline}{13}
+\end{ganttchart}
+
+\end{document}
