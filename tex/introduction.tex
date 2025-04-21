@@ -36,7 +36,8 @@ thereby reducing diagnostic oversight, particularly in complex or ambiguous case
 
 Addressing the critical need for dependable confidence measures
 falls under the domain of Uncertainty Quantification (UQ).
-Within this field, Conformal Prediction (CP) [cite] stands out as a particularly appealing framework.
+Within this field, Conformal Prediction (CP)~\cite{vovk2005algorithmic}
+stands out as a particularly appealing framework.
 It offers a mathematically rigorous yet highly flexible approach
 that can work with virtually any underlying machine learning model.
 Rather than committing to a single prediction,
@@ -44,7 +45,8 @@ CP generates prediction sets-a range or set of possible outcomes-
 accompanied by a guarantee that the true outcome will be contained
 within the set with a user-specified probability (e.g., 90\%).
 It has been shown that presenting prediction sets with such calibrated coverage guarantees
-can improve human classification performance [cite], offering a valuable safety margin.
+can improve human classification performance~\cite{cresswell2024conformal, zhang2024evaluating},
+offering a valuable safety margin.
 This model-agnostic nature makes CP especially useful for
 enhancing the reliability of complex black-box systems,
 without requiring changes to the underlying architecture.
@@ -55,7 +57,8 @@ often demand more nuanced control over potential errors.
 As highlighted in the CXR example, certain types of mistakes—
 such as failing to detect an existing condition (a false negative)—
 are far more detrimental than others.
-Conformal Risk Control (CRC) [cite] extends the core ideas of CP to address this need.
+Conformal Risk Control (CRC)~\cite{angelopoulos2023crc}
+extends the core ideas of CP to address this need.
 Rather than providing blanket coverage guarantees,
 CRC enables practitioners to control the average rate of specific, user-defined errors
 that align with domain-specific priorities.
@@ -80,10 +83,8 @@ The primary aims of this report are to:
 \begin{enumerate}
     \item \textbf{Implement and evaluate CRC across a variety of models.} \\
     This project aims to implement Conformal Risk Control (CRC)
-    on a range of deep learning architectures,
-    including the official CheXpert model, ResNet50, and DenseNet121.
-    These models will be trained and/or fine-tuned on common chest X-ray datasets
-    such as CheXpert and NIH ChestX-ray14.
+    on a range of deep learning architectures.
+    These models will be trained and/or fine-tuned on common chest X-ray datasets.
     The implementation will explore the practicality of applying CRC
     in a multi-label classification setting.
     If time permits, it may also include a baseline comparison using
@@ -93,8 +94,7 @@ The primary aims of this report are to:
     The project will assess how well CRC captures and expresses model uncertainty
     across different datasets.
     This includes evaluating the calibration quality of the generated prediction sets,
-    as well as the generalizability of CRC's uncertainty guarantees between datasets
-    (e.g., training on CheXpert and evaluating on NIH).
+    as well as the generalizability of CRC's uncertainty guarantees between datasets.
     Metrics such as set size, coverage rates,
     and empirical risk will be used to quantify performance.
 
@@ -104,8 +104,8 @@ The primary aims of this report are to:
     particularly for high-risk conditions (e.g., Pleural Effusion, Cardiomegaly).
     The ability to enforce constraints on specific types of error,
     while still maintaining useful coverage, will be examined.
-    Comparisons to standard CP and uncalibrated baselines will help assess CRC's practical benefits
-    in safety-critical diagnostic tasks.
+    Comparisons to standard CP and uncalibrated baselines
+    will help assess CRC's practical benefits in safety-critical diagnostic tasks.
 \end{enumerate}
 
 
@@ -118,7 +118,7 @@ The primary aims of this report are to:
     enough. CRC only controls risk for monotone loss functions that are
     non-increasing as a function of \(\lambda\). (\(\lambda\) being how
     conservative the outputs will be; bigger \(\lambda \to\) bigger prediction
-    sets.) FDR is not. This confusion probably came from the LTT paper [cite]
+    sets.) FDR is not. This confusion probably came from the LTT paper~\cite{angelopoulos2022ltt}
     which \emph{does} control for non-monotone risks. Implementing LTT is most
     likely out of scope for this project, so I have restrained the project to
     looking for other monotone, non-increasing functions to test.
@@ -152,13 +152,14 @@ This project is guided by the following research questions:
 The experimental design for this project will involve the following components:
 
 \begin{itemize}
-    \item \textbf{Datasets:} CheXpert [cite] and NIH ChestX-ray14 [cite] are large-scale,
+    \item \textbf{Datasets:} CheXpert~\cite{irvin2019chexpert} and
+    NIH ChestX-ray14~\cite{wang2017chestxray} are large-scale,
     publicly available chest X-ray datasets with multi-label annotations.
     These provide diverse distributions to evaluate robustness and generalization.
 
-    \item \textbf{Models:} ResNet50, DenseNet121, and the official CheXpert model will be used to
-    evaluate CRC. These models are widely used in the literature and provide a good baseline for
-    comparison.
+    \item \textbf{Models:} ResNet50~\cite{he2015resnet}, DenseNet121~\cite{huang2017densenet},
+    and the official CheXpert model~\cite{irvin2019chexpert} will be used to evaluate CRC.
+    These models are widely used in the literature and provide a good baseline for comparison.
 
     \item \textbf{Metrics:} Evaluate predictive performance,
     calibration quality (coverage vs. target, prediction set size),
@@ -170,7 +171,8 @@ The experimental design for this project will involve the following components:
     to study how they influence the behaviour of CRC and the generated prediction sets on this task.
 \end{itemize}
 
-The \texttt{torchxrayvision} library will be used to load the datasets and preprocess the images.
+The \texttt{torchxrayvision}~\cite{Cohen2022xrv} library will be used
+to load the datasets and preprocess the images.
 This library provides a convenient interface for loading and transforming chest X-ray images,
 including resizing, normalization, and data augmentation.
 The models will run under \texttt{pytorch},
