@@ -1,9 +1,18 @@
 \documentclass[
+	11pt, a4paper
 % release, % Uncomment to agree to project release
-]{kcl-thesis}
+]{report}
 
+\usepackage[
+	margin=2.5cm,           % Set 1.5cm margins on all sides
+    includehead,            % Include header in margin calculations
+    includefoot             % Include footer in margin calculations
+]{geometry}
 \usepackage{standalone}
 \usepackage{pgfgantt}
+\usepackage{tcolorbox}
+\usepackage{graphicx}
+\usepackage{amssymb}
 
 \usepackage[bibstyle=ieee, citestyle=numeric-comp]{biblatex}
 \addbibresource{report.bib}
@@ -20,14 +29,17 @@
 
 %TC:ignore
 \title{Conformal Prediction for Reliable Machine Learning}
-\author{Talha Abdulkuddus}
-\studentnumber{20076327}
-\degree{MSc Artificial Intelligence}
-\supervisor{Dr.\ Nicola Paoletti}
+\author{%
+	Talha Abdulkuddus (20076327) \\
+	MSc Artificial Intelligence \\
+}
+% \studentnumber{20076327}
+% \degree{MSc Artificial Intelligence}
+% \supervisor{Dr.\ Nicola Paoletti}
 
 \begin{document}
 
-% \maketitle
+\maketitle
 
 \setcounter{page}{2}
 \pagenumbering{roman}
