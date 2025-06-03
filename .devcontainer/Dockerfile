@@ -22,6 +22,7 @@ RUN tlmgr install \
     biblatex biblatex-ieee biber \
     microtype \
     setspace \
+    lmodern
     && texhash
 
 # Should have
