@@ -336,3 +336,4 @@ TSWLatexianTemp*
 
 # Nix
 result
+.direnv/
