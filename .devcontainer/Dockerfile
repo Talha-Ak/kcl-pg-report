@@ -42,6 +42,8 @@ RUN tlmgr install \
 
 RUN tlmgr install \
 #     datetime2 datetime2-english \
+      # glossaries
+      glossaries glossaries-english \
 #     # formatting
 #     listings \
 #     # tcolorbox
