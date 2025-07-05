@@ -28,25 +28,44 @@ This project is guided by the following research questions:
 
 The experimental design for this project will involve the following components:
 
+\paragraph{Datasets} CheXpert~\cite{irvin2019chexpert} and
+NIH ChestX-ray14~\cite{wang2017chestxray} are large-scale,
+publicly available chest X-ray datasets with multi-label annotations.
+These provide diverse distributions to evaluate robustness and generalization.
+
+\paragraph{Models}
+To evaluate the robustness of conformal frameworks across different architectural philosophies,
+this project will use ResNet50, DenseNet121, and the official CheXpert model.
+These models are widely used in the literature and provide a good baseline for comparison.
+
 \begin{itemize}
-    \item \textbf{Datasets}: CheXpert~\cite{irvin2019chexpert} and
-    NIH ChestX-ray14~\cite{wang2017chestxray} are large-scale,
-    publicly available chest X-ray datasets with multi-label annotations.
-    These provide diverse distributions to evaluate robustness and generalization.
+    \item \emph{ResNet50}~\cite{he2015resnet}:
+    A 50-layer Residual Network that was selected for being
+    a foundational architecture in modern deep learning.
+    Its use of residual connections allows for the effective training of very deep networks
+    by mitigating the vanishing gradient problem.
+    It serves as a strong and widely used baseline for classification tasks.
 
-    \item \textbf{Models}: ResNet50~\cite{he2015resnet}, DenseNet121~\cite{huang2017densenet},
-    and the official CheXpert model~\cite{irvin2019chexpert} will be used to evaluate CRC.
-    These models are widely used in the literature and provide a good baseline for comparison.
+    \item \emph{DenseNet121}~\cite{huang2017densenet}:
+    A 121-layer Densely Connected Convolutional Network that was chosen
+    to represent an alternative architectural philosophy.
+    DenseNet connects each layer to every other layer in a feed-forward fashion,
+    promoting feature reuse, improving feature propagation, and often achieving
+    high performance with fewer parameters than comparable ResNet models.
 
-    \item \textbf{Metrics}: Evaluate predictive performance,
-    calibration quality (coverage vs. target, prediction set size),
-    and risk control (e.g. FNR) across different models and datasets.
-    A focus on high-risk labels (e.g., Pleural Effusion, Pneumonia) when evaluating risk control.
-
-    \item \textbf{Risk functions}:
-    Experiment with different loss functions and risk definitions (e.g., class-specific FNRs)
-    to study how they influence the behaviour of CRC and the generated prediction sets on this task.
+    \item \emph{Official CheXpert Model}~\cite{irvin2019chexpert}:
+    A DenseNet inspired official baseline model provided by the dataset's authors was also included.
+    This model is specifically pre-trained and configured for the CheXpert task.
 \end{itemize}
+
+\paragraph{Metrics} Evaluate predictive performance,
+calibration quality (coverage vs. target, prediction set size),
+and risk control (e.g. FNR) across different models and datasets.
+A focus on high-risk labels (e.g., Pleural Effusion, Pneumonia) when evaluating risk control.
+
+\paragraph{Risk functions}
+Experiment with different loss functions and risk definitions (e.g., class-specific FNRs)
+to study how they influence the behaviour of CRC and the generated prediction sets on this task.
 
 The \texttt{torchxrayvision}~\cite{Cohen2022xrv} library will be used
 to load the datasets and preprocess the images.
