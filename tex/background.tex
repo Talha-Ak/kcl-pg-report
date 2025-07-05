@@ -18,7 +18,7 @@ While the validity guarantee holds for any NCM,
 an informative NCM leads to smaller, more useful prediction sets.
 Common NCMs often leverage the output of the underlying model.
 For classification, examples include
-the inverse predicted probability of the true class \((1 - \hat \mathbb{P}(y | x))\)
+the inverse predicted probability of the true class \((1 - \hat{\mathbb{P}}(y | x))\)
 or the margin between the probability of the true class
 and the highest probability of any other class.
 
@@ -30,6 +30,7 @@ To overcome this, the split conformal prediction
 method was developed~\cite{papadopoulos2002inductive} and is now the most popular variant.
 Its main drawback is reduced data efficiency, as a portion of the data
 must be held out for calibration and is not used for model training.
+
 ICP works as follows:
 
 \begin{enumerate}
@@ -59,6 +60,30 @@ ICP works as follows:
     \]
 \end{enumerate}
 
+An illustration of step 5 where the prediction set \(\mathcal{C}(X_{test})\)
+is constructed using \(s(x, y) = 1 - \mathbb{P}(y | x)\)
+is shown in Figure~\ref{fig:cp-demo}.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{cp-demo-imgnet.jpg}
+        \caption{A sample image from the ImageNet dataset.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{cp-demo.pdf}
+        \caption{The top 5 model predictions for the image.}
+    \end{subfigure}
+    \caption{%
+        An illustration of the Inductive Conformal Prediction (ICP) procedure.
+        In this example, the prediction set classifies the image as either
+        a traffic sign, switch, or eraser.
+    }
+    \label{fig:cp-demo}
+\end{figure}
 
 \subsection{Evaluating Sets}
 
@@ -170,10 +195,11 @@ This is the gap that Conformal Risk Control (CRC) aims to fill,
 by controlling the expected value of a user-defined, clinically relevant loss function,
 moving beyond general coverage guarantees to manage specific diagnostic risks.
 
-% \cite{lu2022fair} skin lesions, three dermatological categories - non-neoplastic, benign, malignant.
-% \cite{lu2022improving} spinal stenosis in lumbar spine MRI, four severities - none, mild, moderate, severe.
+% TODO: Multilabel CP
 
 \section{Conformal Risk Control}
+
+% TODO: Talk about generic CRC before multilabel classification
 
 The core idea of CRC~\cite{angelopoulos2023crc} is
 to leverage a calibration dataset to tune a parameter, \(\lambda\),
@@ -242,6 +268,8 @@ Note that CRC subsumes standard CP;
 if the loss function is the miscoverage,
 \(\ell(\mathcal{C}_\lambda(X_{n+1}), Y_{n+1}) = \mathbf{1}(Y_{n+1} \notin \mathcal{C}_\lambda(X_{n+1}))\),
 then the expected loss is equivalent to the expected miscoverage rate as in Eq.~\ref{eq:coverage}.
+
+% TODO: LTT
 
 \subsection{Other risk control methods}
 
