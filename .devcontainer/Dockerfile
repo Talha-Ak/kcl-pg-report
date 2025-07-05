@@ -12,6 +12,8 @@ RUN apt-get update -q && \
 
 ENV PATH ${PATH}:/usr/local/texlive/2025/bin/x86_64-linux
 
+RUN tlmgr update --self
+
 # Tooling
 RUN tlmgr install \
     latexmk chktex latexindent texcount \
@@ -22,7 +24,7 @@ RUN tlmgr install \
     biblatex biblatex-ieee biber \
     microtype \
     setspace \
-    lmodern
+    lm \
     && texhash
 
 # Should have
@@ -53,3 +55,6 @@ RUN tlmgr install \
 #     # other
 #     booktabs \
     && texhash
+
+
+RUN tlmgr update --all
