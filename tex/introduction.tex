@@ -14,14 +14,14 @@ by primarily focusing on point predictions
 and lacking the ability to express the model's confidence in its outputs.
 This lack of calibrated uncertainty can be especially problematic in domains where
 incorrect decisions carry severe consequences for patient health.
-For instance, the interpretation of chest X-rays (CXRs)
+For instance, the interpretation of \glspl{cxr}
 is inherently a multi-label classification problem,
 as a single radiograph may exhibit multiple concurrent findings.
 In this context, standard classification accuracy often fails to capture the clinical nuances;
 failing to detect a critical condition like Pleural Effusion (fluid build-up around the lungs),
 for example, can have far more severe consequences than
 incorrectly identifying the presence of Pulmonary Nodules (small lumps in the lungs).
-As a result, developing trustworthy AI tools for CXR analysis
+As a result, developing trustworthy AI tools for \gls{cxr} analysis
 requires methods that go beyond simple accuracy
 and allow for the control of specific, clinically relevant risks.
 
@@ -35,47 +35,48 @@ weigh its suggestions appropriately, and potentially catch errors.
 % thereby reducing diagnostic oversight, particularly in complex or ambiguous cases.
 
 Addressing the critical need for dependable confidence measures
-falls under the domain of Uncertainty Quantification (UQ).
-Within this field, Conformal Prediction (CP)~\cite{vovk2005algorithmic}
+falls under the domain of \gls{uq}.
+Within this field, \gls{cp}~\cite{vovk2005algorithmic}
 stands out as a particularly appealing framework.
 It offers a mathematically rigorous yet highly flexible approach
 that can work with virtually any underlying machine learning model.
 Rather than committing to a single prediction,
-CP generates prediction sets-a range or set of possible outcomes-
+\gls{cp} generates prediction sets (a range or set of possible outcomes)
 accompanied by a guarantee that the true outcome will be contained
-within the set with a user-specified probability (e.g., 90\%).
+within the set with a user-specified probability.
 It has been shown that presenting prediction sets with such calibrated coverage guarantees
 can improve human classification performance~\cite{cresswell2024conformal, zhang2024evaluating},
 offering a valuable safety margin.
-This model-agnostic nature makes CP especially useful for
+This model-agnostic nature makes \gls{cp} especially useful for
 enhancing the reliability of complex black-box systems,
 without requiring changes to the underlying architecture.
 
-While the general coverage guarantees provided by standard CP are broadly useful,
+% TODO: EXPAND ON LTT FROM HERE DOWN
+
+While the general coverage guarantees provided by standard \gls{cp} are broadly useful,
 critical applications like medical diagnosis
 often demand more nuanced control over potential errors.
-As highlighted in the CXR example, certain types of mistakes—
+As highlighted in the \gls{cxr} example, certain types of mistakes—
 such as failing to detect an existing condition (a false negative)—
 are far more detrimental than others.
 Other risk controlling frameworks such as
-Conformal Risk Control (CRC)~\cite{angelopoulos2023crc}
-and Learn then Test (LTT)~\cite{angelopoulos2022ltt}
-extends the core ideas of CP to address this need.
+\gls{crc}~\cite{angelopoulos2023crc} and \gls{ltt}~\cite{angelopoulos2022ltt}
+extends the core ideas of \gls{cp} to address this need.
 Rather than providing blanket coverage guarantees,
-CRC enables practitioners to control the average rate of specific, user-defined errors
+\gls{crc} enables practitioners to control the average rate of specific, user-defined errors
 that align with domain-specific priorities.
-CRC is particularly well-suited for this challenge
+\gls{crc} is particularly well-suited for this challenge
 because its ability to control the expected value of a user-defined monotone loss function
-enables direct management of metrics like the False Negative Rate (FNR),
+enables direct management of metrics like the \gls{fnr}
 which measures the proportion of true findings missed by the model.
-Minimizing expected FNR aligns directly with the clinical imperative to avoid missed diagnoses.
+Minimizing expected \gls{fnr} aligns directly with the clinical imperative to avoid missed diagnoses.
 
 This ability to tailor uncertainty quantification to clinically meaningful risk types
-makes CRC a particularly compelling solution for safety-critical settings
+makes \gls{crc} a particularly compelling solution for safety-critical settings
 like medical image analysis.
-Recognizing the potential of CRC to provide more meaningful safety assurances in clinical settings,
-this project investigates the application of Conformal Risk Control
-to multi-label classification tasks within Chest X-ray imaging.
+Recognizing the potential of \gls{crc} to provide more meaningful safety assurances in clinical settings,
+this project investigates the application of \glsxtrlong{crc}
+to multi-label classification tasks within \glsxtrlong{cxr} imaging.
 
 \section{Research Aims \& Objectives}
 \label{sec:aims-objectives}
@@ -112,3 +113,4 @@ The primary aims of this report are to:
 
 \section{Report Structure}
 
+TODO
