@@ -31,8 +31,8 @@ Any misleading or overconfident predictions could directly influence clinical de
 Understanding not just what the model predicts, but also how confident it is, becomes crucial.
 A system that transparently expresses uncertainty
 can help a radiologist calibrate their trust in the model,
-weigh its suggestions appropriately, and potentially catch errors,
-thereby reducing diagnostic oversight, particularly in complex or ambiguous cases.
+weigh its suggestions appropriately, and potentially catch errors.
+% thereby reducing diagnostic oversight, particularly in complex or ambiguous cases.
 
 Addressing the critical need for dependable confidence measures
 falls under the domain of Uncertainty Quantification (UQ).
@@ -57,7 +57,9 @@ often demand more nuanced control over potential errors.
 As highlighted in the CXR example, certain types of mistakes—
 such as failing to detect an existing condition (a false negative)—
 are far more detrimental than others.
+Other risk controlling frameworks such as
 Conformal Risk Control (CRC)~\cite{angelopoulos2023crc}
+and Learn then Test (LTT)~\cite{angelopoulos2022ltt}
 extends the core ideas of CP to address this need.
 Rather than providing blanket coverage guarantees,
 CRC enables practitioners to control the average rate of specific, user-defined errors
@@ -108,72 +110,5 @@ The primary aims of this report are to:
     will help assess CRC's practical benefits in safety-critical diagnostic tasks.
 \end{enumerate}
 
+\section{Report Structure}
 
-% PRELIMINARY REPORT SPECIFICS
-
-
-\begin{tcolorbox}
-    NOTE: I did mention during the last meeting other loss functions (e.g. FDR)
-    that I would also try. However, I clearly did not read the paper(s) clearly
-    enough. CRC only controls risk for monotone loss functions that are
-    non-increasing as a function of \(\lambda\). (\(\lambda\) being how
-    conservative the outputs will be; bigger \(\lambda \to\) bigger prediction
-    sets.) FDR is not. This confusion probably came from the LTT paper~\cite{angelopoulos2022ltt}
-    which \emph{does} control for non-monotone risks. Implementing LTT is most
-    likely out of scope for this project, so I have restrained the project to
-    looking for other monotone, non-increasing functions to test.
-\end{tcolorbox}
-
-\subsection{Research Questions}
-
-This project is guided by the following research questions:
-
-\begin{itemize}
-    \item How well does Conformal Risk Control (CRC) calibrate uncertainty
-    in multi-label chest X-ray classification tasks?
-
-    \item How does the effect of CRC (and the produced conformal scores)
-    vary across different model architectures?
-
-    \item Can CRC be used to target specific clinically meaningful risks,
-    such as minimizing the False Negative Rate (FNR) for high-priority pathologies?
-
-    \item How does the choice of loss function (e.g., class-weighted loss)
-    impact the effectiveness of CRC in controlling specific types of risk?
-
-    \item How robust is CRC to distribution shifts?
-
-    \item (If time permits) How does CRC compare to standard Conformal Prediction (CP)
-    and uncalibrated models in terms of uncertainty quantification and error control?
-\end{itemize}
-
-\subsection{Experimental Design}
-
-The experimental design for this project will involve the following components:
-
-\begin{itemize}
-    \item \textbf{Datasets:} CheXpert~\cite{irvin2019chexpert} and
-    NIH ChestX-ray14~\cite{wang2017chestxray} are large-scale,
-    publicly available chest X-ray datasets with multi-label annotations.
-    These provide diverse distributions to evaluate robustness and generalization.
-
-    \item \textbf{Models:} ResNet50~\cite{he2015resnet}, DenseNet121~\cite{huang2017densenet},
-    and the official CheXpert model~\cite{irvin2019chexpert} will be used to evaluate CRC.
-    These models are widely used in the literature and provide a good baseline for comparison.
-
-    \item \textbf{Metrics:} Evaluate predictive performance,
-    calibration quality (coverage vs. target, prediction set size),
-    and risk control (e.g. FNR) across different models and datasets.
-    A focus on high-risk labels (e.g., Pleural Effusion, Pneumonia) when evaluating risk control.
-
-    \item \textbf{Risk functions:}
-    Experiment with different loss functions and risk definitions (e.g., class-specific FNRs)
-    to study how they influence the behaviour of CRC and the generated prediction sets on this task.
-\end{itemize}
-
-The \texttt{torchxrayvision}~\cite{Cohen2022xrv} library will be used
-to load the datasets and preprocess the images.
-This library provides a convenient interface for loading and transforming chest X-ray images,
-including resizing, normalization, and data augmentation.
-The models will run under \texttt{pytorch},
-a popular deep learning framework for machine learning and computer vision tasks.

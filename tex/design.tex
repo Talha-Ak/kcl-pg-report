@@ -1,1 +1,55 @@
 \chapter{Specification \& Design}
+
+\subsection{Research Questions}
+
+This project is guided by the following research questions:
+
+\begin{itemize}
+    \item How well does Conformal Risk Control (CRC) calibrate uncertainty
+    in multi-label chest X-ray classification tasks?
+
+    \item How does the effect of CRC (and the produced conformal scores)
+    vary across different model architectures?
+
+    \item Can CRC be used to target specific clinically meaningful risks,
+    such as minimizing the False Negative Rate (FNR) for high-priority pathologies?
+
+    \item How does the choice of loss function (e.g., class-weighted loss)
+    impact the effectiveness of CRC in controlling specific types of risk?
+
+    \item How robust is CRC to distribution shifts?
+
+    \item (If time permits) How does CRC compare to standard Conformal Prediction (CP)
+    and uncalibrated models in terms of uncertainty quantification and error control?
+\end{itemize}
+
+\subsection{Experimental Design}
+
+The experimental design for this project will involve the following components:
+
+\begin{itemize}
+    \item \textbf{Datasets:} CheXpert~\cite{irvin2019chexpert} and
+    NIH ChestX-ray14~\cite{wang2017chestxray} are large-scale,
+    publicly available chest X-ray datasets with multi-label annotations.
+    These provide diverse distributions to evaluate robustness and generalization.
+
+    \item \textbf{Models:} ResNet50~\cite{he2015resnet}, DenseNet121~\cite{huang2017densenet},
+    and the official CheXpert model~\cite{irvin2019chexpert} will be used to evaluate CRC.
+    These models are widely used in the literature and provide a good baseline for comparison.
+
+    \item \textbf{Metrics:} Evaluate predictive performance,
+    calibration quality (coverage vs. target, prediction set size),
+    and risk control (e.g. FNR) across different models and datasets.
+    A focus on high-risk labels (e.g., Pleural Effusion, Pneumonia) when evaluating risk control.
+
+    \item \textbf{Risk functions:}
+    Experiment with different loss functions and risk definitions (e.g., class-specific FNRs)
+    to study how they influence the behaviour of CRC and the generated prediction sets on this task.
+\end{itemize}
+
+The \texttt{torchxrayvision}~\cite{Cohen2022xrv} library will be used
+to load the datasets and preprocess the images.
+This library provides a convenient interface for loading and transforming chest X-ray images,
+including resizing, normalization, and data augmentation.
+The models will run under \texttt{pytorch},
+a popular deep learning framework for machine learning and computer vision tasks.
