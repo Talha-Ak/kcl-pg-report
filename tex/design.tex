@@ -1,6 +1,7 @@
 \chapter{Specification \& Design}
+\label{ch:design}
 
-\subsection{Research Questions}
+\section{Research Questions}
 
 This project is guided by the following research questions:
 
@@ -23,26 +24,26 @@ This project is guided by the following research questions:
     and uncalibrated models in terms of uncertainty quantification and error control?
 \end{itemize}
 
-\subsection{Experimental Design}
+\section{Experimental Design}
 
 The experimental design for this project will involve the following components:
 
 \begin{itemize}
-    \item \textbf{Datasets:} CheXpert~\cite{irvin2019chexpert} and
+    \item \textbf{Datasets}: CheXpert~\cite{irvin2019chexpert} and
     NIH ChestX-ray14~\cite{wang2017chestxray} are large-scale,
     publicly available chest X-ray datasets with multi-label annotations.
     These provide diverse distributions to evaluate robustness and generalization.
 
-    \item \textbf{Models:} ResNet50~\cite{he2015resnet}, DenseNet121~\cite{huang2017densenet},
+    \item \textbf{Models}: ResNet50~\cite{he2015resnet}, DenseNet121~\cite{huang2017densenet},
     and the official CheXpert model~\cite{irvin2019chexpert} will be used to evaluate CRC.
     These models are widely used in the literature and provide a good baseline for comparison.
 
-    \item \textbf{Metrics:} Evaluate predictive performance,
+    \item \textbf{Metrics}: Evaluate predictive performance,
     calibration quality (coverage vs. target, prediction set size),
     and risk control (e.g. FNR) across different models and datasets.
     A focus on high-risk labels (e.g., Pleural Effusion, Pneumonia) when evaluating risk control.
 
-    \item \textbf{Risk functions:}
+    \item \textbf{Risk functions}:
     Experiment with different loss functions and risk definitions (e.g., class-specific FNRs)
     to study how they influence the behaviour of CRC and the generated prediction sets on this task.
 \end{itemize}
