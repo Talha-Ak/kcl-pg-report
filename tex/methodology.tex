@@ -9,24 +9,29 @@ in Figure~\ref{fig:design-pipeline}.
 \begin{figure}[tb]
     \centering
     \includegraphics[width=\textwidth]{figures/design-pipeline}
-    \caption{Design pipeline for the proposed methodology.}
+    \caption{%
+        The pipeline is separated into two main stages.
+        \texttt{torchxrayvision} (left) was used to source datasets and pre-trained models.
+        The risk control framework (right) was implemented from scratch to
+        apply and evaluate the conformal risk control methods.
+    }
     \label{fig:design-pipeline}
 \end{figure}
 
 \section{Dataset and Data Preparation}
 \label{sec:dataset-preparation}
 
-As outlined in the experimental design, the CheXpert and NIH ChestX-ray14
-datasets were loaded using the \texttt{torchxrayvision} library. This library provides a
-standardized interface that handles the complexities of these datasets, such as
-mapping labels to a common set of conditions and applying necessary image
-transformations.
+As outlined in the experimental design (Chapter \ref{ch:design}),
+the CheXpert and NIH ChestX-ray14 datasets were loaded using the \texttt{torchxrayvision} library.
+This library provides a standardized interface that handles the complexities of these datasets,
+such as mapping labels to a common set of conditions
+and applying necessary image transformations.
 
-The CheXpert dataset presented a unique challenge due to its multi-class
-labeling system, where each finding could be marked as present, absent, or
-uncertain. The handling of these uncertain labels is non-trivial and can
-significantly impact model performance. The original CheXpert researchers
-systematically evaluated several mapping strategies, including:
+The CheXpert dataset presented a unique challenge due to its multi-class labelling system,
+where each finding could be marked as \emph{present}, \emph{absent}, or \emph{uncertain}.
+The handling of these uncertain labels is non-trivial and can
+significantly impact model performance.
+The original CheXpert researchers systematically evaluated several mapping strategies, including:
 
 \begin{itemize}
     \item \textbf{U-Zeros}: Treating all uncertain labels as negative (0).
@@ -34,42 +39,78 @@ systematically evaluated several mapping strategies, including:
     \item \textbf{U-Ignore}: Ignoring samples with uncertain labels during training.
 \end{itemize}
 
-For this project, the `U-Zeros' approach was implemented, mapping all uncertain
-labels to `absent'. This decision provides a conservative and reproducible
-baseline, enabling a clear focus on the primary research goal: evaluating the
-performance and guarantees of Conformal Risk Control (CRC) and Learn then Test
-(LTT). It is acknowledged, however, that this is a simplification, and a comprehensive
-future study could investigate how these different label-handling
-philosophies interact with the guarantees and outputs produced by these
-calibration frameworks.
+For this project, the `U-Zeros' approach was implemented,
+mapping all uncertain labels to `absent'.
+This decision provides a conservative and reproducible baseline,
+enabling a clear focus on the primary research goal:
+evaluating the performance and guarantees of \gls{crc} and \gls{ltt}.
+It is acknowledged, however, that this is a simplification, and a comprehensive future study
+could investigate how these different label-handling philosophies interact
+with the guarantees and outputs produced by these calibration frameworks.
 
-\section{Model Architectures}
+\section{Model Architectures \& Data Splitting}
 
-Data from these datasets were split into training, calibration, and test sets,
-also using the \texttt{torchxrayvision} library.
+A key methodological choice was to leverage existing, high-performance models
+pre-trained on chest X-ray data, rather than training models from scratch.
+This approach mirrors a realistic clinical deployment scenario
+and allows the research to focus squarely on the novel application
+and evaluation of \gls{crc} and \gls{ltt}.
 
-The models for this project were chosen to provide a robust and diverse
-evaluation of CRC's performance across different modern convolutional neural
-network (CNN) architectures. All models were sourced from the torchxrayvision
-library to ensure consistency and reproducibility, and care was taken to ensure
-that any results were in line with the library's benchmarks.
+As outlined previously, this project utilizes ResNet50 and DenseNet121 neural network architectures.
+Crucially, these models were sourced from the \texttt{torchxrayvision} library,
+which provides models already pre-trained on large-scale chest X-ray datasets
+(e.g., NIH, CheXpert, MIMIC-CXR).
 
-ResNet50: A 50-layer Residual Network was selected as it is a foundational
-architecture in modern deep learning. Its use of residual connections allows for
-the effective training of very deep networks by mitigating the vanishing
-gradient problem. It serves as a strong and widely used baseline for
-classification tasks.
+This is a critical distinction from standard ImageNet pre-training.
+By using models that have already learned a rich feature hierarchy specific to radiographic imaging,
+we bypass the need for extensive training and can work with a powerful, domain-specific baseline.
+This ensures that the performance of the underlying classifier is state-of-the-art,
+allowing the analysis to focus purely on the effectiveness of \gls{crc} and \gls{ltt}
+in controlling risk for an already-competent model.
 
-DenseNet121: A 121-layer Densely Connected Convolutional Network was chosen to
-represent an alternative architectural philosophy. DenseNet connects each layer
-to every other layer in a feed-forward fashion, promoting feature reuse,
-improving feature propagation, and often achieving high performance with fewer
-parameters than comparable ResNet models.
+The implementation workflow was as follows:
 
-Official CheXpert Model: To ensure a direct and fair comparison on the CheXpert
-dataset, the official baseline model provided by the dataset's authors (a
-DenseNet121 variant) was also included. This model is specifically pre-trained
-and configured for the CheXpert task.
+\begin{enumerate}
+    \item \textbf{Dataset Loading}:
+    Necessary datasets are loaded from disk to memory.
+
+    \item \textbf{Model Loading}:
+    A pre-trained model (e.g., \texttt{torchxrayvision.models.DenseNet121}) is loaded into memory.
+    These models are configured for multi-label classification across a set of common pathologies.
+
+    \item \textbf{Model Inference}:
+    Where this combination of (dataset, model) has not been previously evaluated,
+    the model is run on the calibration and test sets to generate raw output logits.
+    For each image x in the calibration and test sets,
+    the model produced a vector of raw output values (logits).
+    These were then passed through a Sigmoid activation function to generate a probability score
+    \(f(x)_k\) between 0 and 1 for each potential pathology k.
+
+    \item \textbf{Output Caching \& Calibration}:
+    This vector of probabilities is the direct input for the conformal framework being evaluated.
+    As these conformal frameworks are solely post-processing steps,
+    they do not require any additional training.
+    Therefore, the output of this specific combination of (dataset, model) is cached for future use.
+\end{enumerate}
+
+Model inference was performed on King's College London's
+CREATE High Performance Computing cluster~\cite{kcl2025create},
+which provided the necessary computational resources and execution times
+to handle the large-scale datasets and pre-trained models efficiently.
+
+Data from these datasets were then split into training, calibration, and test sets.
+A critical aspect of evaluating pre-trained models is ensuring that the calibration and test data
+have not been seen by the model during its own training phase.
+Any overlap would constitute data leakage and invalidate the experimental results.
+Care was taken to ensure that the calibration and test sets were distinct
+from the training data used to pre-train the models,
+by using the same splits and random seeds as used in the library's benchmarks.
 
 The remaining portions of the pipeline were implemented from scratch using
 standard PyTorch and NumPy libraries.
+
+\section{Multilabel CP}
+
+\section{Conformal Risk Control}
+
+\section{Learn then Test}
