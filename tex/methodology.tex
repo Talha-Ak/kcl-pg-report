@@ -1,1 +1,75 @@
 \chapter{Methodology and Implementation}
+\label{ch:methodology}
+
+This chapter outlines the design and implementation of the proposed methodology
+for multi-label \gls{cxr} classification.
+A high level overview of the pipeline implemented is presented
+in Figure~\ref{fig:design-pipeline}.
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\textwidth]{figures/design-pipeline}
+    \caption{Design pipeline for the proposed methodology.}
+    \label{fig:design-pipeline}
+\end{figure}
+
+\section{Dataset and Data Preparation}
+\label{sec:dataset-preparation}
+
+As outlined in the experimental design, the CheXpert and NIH ChestX-ray14
+datasets were loaded using the \texttt{torchxrayvision} library. This library provides a
+standardized interface that handles the complexities of these datasets, such as
+mapping labels to a common set of conditions and applying necessary image
+transformations.
+
+The CheXpert dataset presented a unique challenge due to its multi-class
+labeling system, where each finding could be marked as present, absent, or
+uncertain. The handling of these uncertain labels is non-trivial and can
+significantly impact model performance. The original CheXpert researchers
+systematically evaluated several mapping strategies, including:
+
+\begin{itemize}
+    \item \textbf{U-Zeros}: Treating all uncertain labels as negative (0).
+    \item \textbf{U-Ones}: Treating all uncertain labels as positive (1).
+    \item \textbf{U-Ignore}: Ignoring samples with uncertain labels during training.
+\end{itemize}
+
+For this project, the `U-Zeros' approach was implemented, mapping all uncertain
+labels to `absent'. This decision provides a conservative and reproducible
+baseline, enabling a clear focus on the primary research goal: evaluating the
+performance and guarantees of Conformal Risk Control (CRC) and Learn then Test
+(LTT). It is acknowledged, however, that this is a simplification, and a comprehensive
+future study could investigate how these different label-handling
+philosophies interact with the guarantees and outputs produced by these
+calibration frameworks.
+
+\section{Model Architectures}
+
+Data from these datasets were split into training, calibration, and test sets,
+also using the \texttt{torchxrayvision} library.
+
+The models for this project were chosen to provide a robust and diverse
+evaluation of CRC's performance across different modern convolutional neural
+network (CNN) architectures. All models were sourced from the torchxrayvision
+library to ensure consistency and reproducibility, and care was taken to ensure
+that any results were in line with the library's benchmarks.
+
+ResNet50: A 50-layer Residual Network was selected as it is a foundational
+architecture in modern deep learning. Its use of residual connections allows for
+the effective training of very deep networks by mitigating the vanishing
+gradient problem. It serves as a strong and widely used baseline for
+classification tasks.
+
+DenseNet121: A 121-layer Densely Connected Convolutional Network was chosen to
+represent an alternative architectural philosophy. DenseNet connects each layer
+to every other layer in a feed-forward fashion, promoting feature reuse,
+improving feature propagation, and often achieving high performance with fewer
+parameters than comparable ResNet models.
+
+Official CheXpert Model: To ensure a direct and fair comparison on the CheXpert
+dataset, the official baseline model provided by the dataset's authors (a
+DenseNet121 variant) was also included. This model is specifically pre-trained
+and configured for the CheXpert task.
+
+The remaining portions of the pipeline were implemented from scratch using
+standard PyTorch and NumPy libraries.
