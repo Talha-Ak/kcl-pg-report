@@ -5,7 +5,7 @@
 \begin{document}
 \begin{tikzpicture}[
     node distance=2.5cm,
-    box/.style={rectangle, draw, rounded corners=5pt, minimum width=2.5cm, minimum height=1cm, align=center, fill=blue!10},
+    box/.style={rectangle, draw, rounded corners=5pt, minimum width=2.5cm, minimum height=1.2cm, align=center, fill=blue!10},
     arrow/.style={-Stealth, thick}
 ]
 
@@ -22,14 +22,18 @@ CP & CRC & LTT \\
 
 \node[box, below=of frameworks] (evaluation) {Evaluation};
 
-% Add background region for data preparation using rectangle
-\scoped[on background layer]
-\draw[draw=gray!50, fill=gray!10, rounded corners=10pt]
-    ([xshift=15pt,yshift=15pt]training.north east) rectangle
-    ([xshift=-15pt,yshift=-25pt]dataset.south west);
+\begin{scope}[on background layer]
+    \draw[draw=gray!50, fill=gray!10, rounded corners=10pt]
+        ([xshift=15pt,yshift=15pt]training.north east) rectangle
+        ([xshift=-15pt,yshift=-25pt]dataset.south west);
 
-% Add label to the background region
-\node[gray!70, font=\small\ttfamily] at ([xshift=-75pt,yshift=-15pt]splitting.south) {torchxrayvision};
+    \draw[draw=green!50, fill=green!10, rounded corners=10pt]
+        ([xshift=35pt,yshift=15pt]frameworks.north east) rectangle
+        ([xshift=-65pt,yshift=-25pt]evaluation.south west);
+\end{scope}
+
+\node[gray!70!black, font=\small\ttfamily] at ([xshift=-75pt,yshift=-15pt]splitting.south) {torchxrayvision};
+\node[green!70!black, font=\small\ttfamily] at ([xshift=-5pt,yshift=-15pt]evaluation.south) {risk control framework};
 
 % Draw arrows
 \draw[arrow] (dataset) -- (splitting);
