@@ -3,7 +3,7 @@ release, % Uncomment to agree to project release
 ]{kcl-thesis}
 
 \usepackage{standalone}
-\usepackage{pgfgantt}
+\usepackage{subcaption}
 
 \usepackage[bibstyle=ieee, citestyle=numeric-comp]{biblatex}
 \addbibresource{report.bib}
@@ -19,7 +19,10 @@ release, % Uncomment to agree to project release
 	urlcolor={blue!80!black}
 }
 
-\usepackage{glossaries}
+\usepackage{glossaries-extra}
+\loadglsentries{tex/defns}
+% Disable hyperlinks by default for all \gls-like commands
+\GlsXtrSetDefaultGlsOpts{hyper=false}
 
 %TC:ignore
 \title{Beyond Coverage: Generalized Risk Control for Multi-Label CXR Classification}

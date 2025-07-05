@@ -46,8 +46,11 @@
                 # Nice to have
                 tcolorbox
                 pgfgantt
+                pgfplots
+                caption
                 glossaries
                 glossaries-english
+                glossaries-extra
                 # standalone
                 standalone
                 filehook

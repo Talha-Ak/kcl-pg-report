@@ -38,12 +38,14 @@ RUN tlmgr install \
 RUN tlmgr install \
     tcolorbox \
     pgfgantt \
+    pgfplots \
+    caption \
     && texhash
 
 RUN tlmgr install \
 #     datetime2 datetime2-english \
       # glossaries
-      glossaries glossaries-english \
+      glossaries glossaries-english glossaries-extra \
 #     # formatting
 #     listings \
 #     # tcolorbox
