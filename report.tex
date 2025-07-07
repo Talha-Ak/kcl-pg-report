@@ -21,7 +21,6 @@ release, % Uncomment to agree to project release
 
 \usepackage[automake, toc=false]{glossaries-extra}
 \loadglsentries{tex/defns}
-% Disable hyperlinks by default for all \gls-like commands
 \GlsXtrSetDefaultGlsOpts{hyper=false}
 \makeglossaries
 
@@ -42,8 +41,14 @@ release, % Uncomment to agree to project release
 \include{tex/acknowledgements}
 \include{tex/abstract}
 \printglossary[title={Nomenclature}]
+
 \tableofcontents
+
 \listoffigures
+\begingroup
+\let\clearpage\relax
+\listoftables
+\endgroup
 
 \newpage
 \pagenumbering{arabic}
