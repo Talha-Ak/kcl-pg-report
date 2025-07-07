@@ -55,6 +55,8 @@
                 standalone
                 filehook
                 svn-prov
+                # booktabs
+                booktabs
               ]
           )
         )

@@ -57,7 +57,7 @@ RUN tlmgr install \
 #     # BNF syntax
 #     mdwtools \
 #     # other
-#     booktabs \
+    booktabs \
     && texhash
 
 
