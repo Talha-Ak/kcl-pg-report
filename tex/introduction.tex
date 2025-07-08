@@ -32,7 +32,6 @@ Understanding not just what the model predicts, but also how confident it is, be
 A system that transparently expresses uncertainty
 can help a radiologist calibrate their trust in the model,
 weigh its suggestions appropriately, and potentially catch errors.
-% thereby reducing diagnostic oversight, particularly in complex or ambiguous cases.
 
 Addressing the critical need for dependable confidence measures
 falls under the domain of \gls{uq}.
@@ -50,33 +49,48 @@ offering a valuable safety margin.
 This model-agnostic nature makes \gls{cp} especially useful for
 enhancing the reliability of complex black-box systems,
 without requiring changes to the underlying architecture.
+However, this fundamental guarantee of \emph{marginal} coverage
+does not distinguish between different types of errors,
+which is a critical limitation in clinical applications.
 
 % TODO: EXPAND ON LTT FROM HERE DOWN
 
 While the general coverage guarantees provided by standard \gls{cp} are broadly useful,
 critical applications like medical diagnosis
 often demand more nuanced control over potential errors.
-As highlighted in the \gls{cxr} example, certain types of mistakes—
-such as failing to detect an existing condition (a false negative)—
+As highlighted in the \gls{cxr} example, certain types of mistakes
+(e.g., failing to detect an existing condition)
 are far more detrimental than others.
-Other risk controlling frameworks such as
-\gls{crc}~\cite{angelopoulos2023crc} and \gls{ltt}~\cite{angelopoulos2022ltt}
-extends the core ideas of \gls{cp} to address this need.
-Rather than providing blanket coverage guarantees,
-\gls{crc} enables practitioners to control the average rate of specific, user-defined errors
-that align with domain-specific priorities.
-\gls{crc} is particularly well-suited for this challenge
-because its ability to control the expected value of a user-defined monotone loss function
-enables direct management of metrics like the \gls{fnr}
-which measures the proportion of true findings missed by the model.
-Minimizing expected \gls{fnr} aligns directly with the clinical imperative to avoid missed diagnoses.
+This motivates the move to frameworks like \gls{crc}~\cite{angelopoulos2023crc},
+which generalises \gls{cp} to control the expected value of a
+user-defined, bounded, monotone loss function.
+This allows a practitioner to directly control a metric
+like the \gls{fnr}, aligning the model's guarantee with domain-specific priorities.
 
-This ability to tailor uncertainty quantification to clinically meaningful risk types
-makes \gls{crc} a particularly compelling solution for safety-critical settings
-like medical image analysis.
-Recognizing the potential of \gls{crc} to provide more meaningful safety assurances in clinical settings,
-this project investigates the application of \glsxtrlong{crc}
-to multi-label classification tasks within \glsxtrlong{cxr} imaging.
+However, the guarantees of CRC are limited by two key assumptions.
+First, the risk is only controlled \emph{in expectation},
+which may not be a strong enough guarantee for safety-critical decisions.
+Second, and more critically, it requires the loss function to be monotone.
+This restriction prevents CRC from controlling many important non-monotone metrics,
+such as the \gls{fdr}.
+
+To address these limitations, the \gls{ltt} framework was proposed~\cite{angelopoulos2022ltt}.
+By reframing calibration as a multiple hypothesis testing problem,
+LTT can provide a stronger high-probability guarantee on the chosen risk.
+Crucially, it removes the monotonicity requirement,
+empowering it to control any risk function,
+thereby unlocking the ability to manage a wider class of clinically relevant errors.
+
+The distinct theoretical properties and practical trade-offs between these frameworks
+motivate a comparative investigation.
+Recognizing the need for guarantees that are both
+statistically valid and clinically meaningful,
+this project undertakes a systematic evaluation of \glsxtrlong{cp},
+\glsxtrlong{crc}, and \glsxtrlong{ltt}
+within the context of multi-label chest X-ray classification.
+By implementing and testing these frameworks on key clinical risks,
+this work aims to provide a clear analysis of their practical strengths,
+limitations, and suitability for deployment in high-stakes environments.
 
 \section{Research Aims \& Objectives}
 \label{sec:aims-objectives}
@@ -84,33 +98,65 @@ to multi-label classification tasks within \glsxtrlong{cxr} imaging.
 The primary aims of this report are to:
 
 \begin{enumerate}
-    \item \textbf{Implement and evaluate CRC across a variety of models.} \\
-    This project aims to implement Conformal Risk Control (CRC)
-    on a range of deep learning architectures.
-    These models will be trained and/or fine-tuned on common chest X-ray datasets.
-    The implementation will explore the practicality of applying CRC
-    in a multi-label classification setting.
-    If time permits, it may also include a baseline comparison using
-    standard Conformal Prediction (CP).
+    \item \textbf{Implement and conduct a comparative evaluation of \gls{crc} and \gls{ltt}.} \\
+    This project's foundational aim is to implement and systematically compare
+    three distinct frameworks for post-hoc calibration of various deep learning models
+    on multi-label chest X-ray classification tasks.
+    The frameworks evaluated are:
+    \begin{itemize}
+        \item \emph{\glsxtrfull{icp}}:
+        As a baseline for controlling the marginal coverage rate.
+        \item \emph{\glsxtrfull{crc}}:
+        A generalization designed to control the expected value of any bounded, monotone risk function.
+        \item \emph{\glsxtrfull{ltt}}:
+        A more recent framework that reframes calibration as a multiple hypothesis testing problem,
+        enabling high-probability control of a wider class of risk functions, including non-monotone ones.
+    \end{itemize}
 
-    \item \textbf{Evaluate CRC's ability to quantify model uncertainty across datasets.} \\
-    The project will assess how well CRC captures and expresses model uncertainty
-    across different datasets.
-    This includes evaluating the calibration quality of the generated prediction sets,
-    as well as the generalizability of CRC's uncertainty guarantees between datasets.
-    Metrics such as set size, coverage rates,
-    and empirical risk will be used to quantify performance.
+    \item \textbf{Evaluate the control of clinically relevant monotone and non-monotone risks.} \\
+    A key objective is to investigate how effectively these frameworks can be tailored
+    to manage different types of diagnostic error, moving beyond simple coverage.
+    This includes:
+    \begin{itemize}
+        \item \emph{Controlling False Negatives with \gls{crc} and \gls{ltt}}:
+        Assessing the ability of both \gls{crc} and \gls{ltt} to control the \gls{fnr}.
+        This is a critical monotone risk in diagnostics,
+        as minimizing it corresponds directly to the clinical imperative of not missing existing pathologies.
+        \item \emph{Controlling False Discoveries with \gls{ltt}}:
+        Leveraging the unique capability of the \gls{ltt} framework to control the \gls{fdr}.
+        As a non-monotone risk, \gls{fdr} cannot be controlled by standard \gls{crc},
+        and this evaluation will serve as a key point of comparison,
+        demonstrating a major practical advantage of the hypothesis testing approach.
+    \end{itemize}
 
-    \item \textbf{Evaluate CRC's ability to control clinically significant risks.} \\
-    A key objective is to determine how effectively CRC can be used
-    to control relevant metrics such as the False Negative Rate (FNR),
-    particularly for high-risk conditions (e.g., Pleural Effusion, Cardiomegaly).
-    The ability to enforce constraints on specific types of error,
-    while still maintaining useful coverage, will be examined.
-    Comparisons to standard CP and uncalibrated baselines
-    will help assess CRC's practical benefits in safety-critical diagnostic tasks.
+
+    \item \textbf{Assess the Practicality and Nuances of Applying User-Defined Risk Functions.} \\
+    This aim explores the flexibility and robustness of the frameworks
+    when applied to more complex, realistic scenarios.
+    The objective is to evaluate how performance is affected by:
+    \begin{itemize}
+        \item \emph{Custom-Weighted Risk Functions}:
+        Implementing and evaluating a clinically-weighted \gls{fnr} within the \gls{crc} framework.
+        This novel risk function assigns higher penalties for missing more critical pathologies
+        (e.g., Pleural Effusion) than less severe ones,
+        assessing the framework's adaptability to nuanced clinical priorities.
+        \item \emph{Generalization Across Models and Datasets}:
+        Evaluating the performance and validity of the guarantees provided by all frameworks
+        across different model architectures (e.g., ResNet, DenseNet)
+        and imaging datasets (e.g., CheXpert, NIH ChestX-ray14)
+        to understand their robustness to architectural choices and distribution shifts.
+    \end{itemize}
 \end{enumerate}
 
 \section{Report Structure}
 
-TODO
+The report is structured as follows. Chapter~\ref{ch:background} introduces
+the theoretical foundations of \glsxtrlong{cp}, \glsxtrlong{crc}, and \glsxtrlong{ltt}.
+Chapter~\ref{ch:design} outlines the experimental design, including research questions,
+datasets, models, and evaluation metrics.
+The practical implementation of the experimental pipeline is detailed in Chapter~\ref{ch:methodology}.
+Chapter~\ref{ch:results} presents and analyses the empirical findings,
+comparing the performance of the three frameworks. The broader ethical, social, and professional
+implications of the research are discussed in Chapter~\ref{ch:legal}.
+Finally, Chapter~\ref{ch:conclusion} summarises the key findings and contributions of the report,
+and suggests directions for future work.
