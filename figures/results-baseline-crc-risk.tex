@@ -1,0 +1,33 @@
+\documentclass[tikz]{standalone}
+\usepackage{pgfplots}
+\usepackage{tikzviolinplots}
+\pgfplotsset{compat=1.18}
+
+\begin{document}
+\begin{tikzpicture}
+  \violinsetoptions[
+    averages,
+    scaled
+  ]{
+    xmin=0,xmax=3,
+    ymin=0,ymax=0.5,
+    ymajorgrids=true,
+    ylabel={False Negative Rate}
+  }
+  \violinplotwholefile[%
+    primary color=red,
+    secondary color=blue,
+    col sep=space,
+    indexes={B,A},
+    labels={ICP, CRC}
+  ]{results-baseline-crc-risk.dat}
+  \begin{axis}[
+    xmin=0,xmax=3,
+    xtick=\empty,
+    ymin=0,ymax=0.5,
+  ]
+    % \draw[red] (0,0.1) -- (3,0.1);
+    \draw[red, dashed](axis cs:0,0.1) -- (axis cs:3,0.1);
+  \end{axis}
+\end{tikzpicture}
+\end{document}

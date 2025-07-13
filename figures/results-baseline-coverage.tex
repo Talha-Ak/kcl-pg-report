@@ -1,0 +1,49 @@
+\documentclass[tikz]{standalone}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+\begin{document}
+
+\begin{tikzpicture}
+\begin{axis}[
+    width=12cm,
+    height=5cm,
+    ybar,
+    symbolic x coords={Atelectasis, Cardiomegaly, Consolidation, Edema, Effusion, Emphysema, Fibrosis, Hernia, Infiltration, Mass, Nodule, Pleural Thickening, Pneumonia, Pneumothorax},
+    xtick=data,
+    xticklabel style={
+        font=\footnotesize,
+        rotate=45,
+        anchor=east
+    },
+    ylabel=Coverage Rate,
+    ymin=0.85, ymax=0.95,
+    xlabel={Pathologies},
+    enlarge x limits=0.10,
+    legend pos=north east,
+]
+
+\addplot coordinates {
+    (Atelectasis, 0.9011)
+    (Cardiomegaly, 0.9026)
+    (Consolidation, 0.9005)
+    (Edema, 0.9011)
+    (Effusion, 0.9030)
+    (Emphysema, 0.9018)
+    (Fibrosis, 0.9078)
+    (Hernia, 0.9006)
+    (Infiltration, 0.9048)
+    (Mass, 0.9013)
+    (Nodule, 0.9025)
+    (Pleural Thickening, 0.9013)
+    (Pneumonia, 0.9015)
+    (Pneumothorax, 0.9286)
+};
+
+\path (axis cs:{[normalized]1},0.9) coordinate (aux);
+\end{axis}
+
+\draw[red, dashed] (current axis.east|-aux) -- (current axis.west|-aux) node [above right] {\(1 - \alpha\)};
+\end{tikzpicture}
+
+\end{document}
