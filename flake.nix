@@ -57,6 +57,9 @@
                 svn-prov
                 # booktabs
                 booktabs
+                # violin plots
+                tikzviolinplots
+                stringstrings
               ]
           )
         )

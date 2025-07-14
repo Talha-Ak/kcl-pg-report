@@ -58,6 +58,7 @@ RUN tlmgr install \
 #     mdwtools \
 #     # other
     booktabs \
+    tikzviolinplots stringstrings \
     && texhash
 
 
