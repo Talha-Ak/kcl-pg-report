@@ -1,2 +1,246 @@
 \chapter{Results \& Analysis}
 \label{ch:results}
+
+\section{Baseline Performance: Inductive Conformal Prediction}
+
+The ICP framework was configured with a target error rate of \(\alpha = 0.1\),
+corresponding to a nominal coverage level of 90\% for each of the 14 pathologies.
+
+Figure~\ref{fig:baseline-coverage} presents the achieved coverage rate
+for each pathology on the NIH \gls{cxr} test set,
+using the DenseNet121 model.
+The y-axis represents the empirical coverage rate,
+calculated as the proportion of test samples for a given pathology
+where the true label was correctly included in the prediction set.
+The x-axis lists each of the 14 distinct pathologies evaluated.
+The dashed red line indicates the nominal coverage target of 90\% \((1 - \alpha)\).
+
+\begin{figure}
+    \centering
+    \includegraphics{figures/results-baseline-coverage}
+    \caption{%
+        Achieved class-conditional coverage rates, using DenseNet121 on the NIH dataset.
+        The results confirm the validity of the implementation,
+        as the empirical coverage for every class meets or exceeds
+        the 90\% nominal level (red line).
+    }
+    \label{fig:baseline-coverage}
+\end{figure}
+
+The results depicted clearly validate the correctness
+of the class-conditional ICP implementation.
+For every pathology, the empirical coverage rate meets or exceeds the 90\% target.
+The variation in coverage, particularly the high rate for Pneumothorax,
+suggests that the model has differing levels of difficulty for each class,
+forcing the prediction set to be more conservative for some than for others.
+
+While ICP provides valid coverage,
+its primary objective is not to control specific types of errors.
+The critical question for clinical deployment is whether it is suitable
+for risk-sensitive applications, where the cost of false negatives
+is significantly higher than that of false positives.
+To investigate this, the FNR of ICP was compared against that of CRC,
+which was configured to target an FNR of \(\alpha=0.1\).
+Both frameworks were evaluated under 100 different random test splits,
+with the distribution of FNRs shown in Figure~\ref{fig:baseline-crc-risk}.
+
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.40\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/results-baseline-crc-risk}
+        \caption{%
+            Distribution of FNRs for ICP and CRC.
+        }
+        \label{fig:baseline-crc-risk}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.56\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/results-baseline-crc-size}
+        \caption{%
+            Distribution of prediction set sizes for ICP and CRC.
+        }
+        \label{fig:baseline-crc-size}
+    \end{subfigure}
+    \caption{%
+        \textcolor{red}{(TODO: legend overlaps, y-axis needs to be consistent with other fig)}
+        Comparison of ICP and CRC in terms of FNR and prediction set size,
+        using DenseNet121 on the NIH dataset.
+        (a) shows the distribution of FNRs, with the dashed line
+        indicating the target level of 10\% for CRC.
+        (b) illustrates the difference in distribution of prediction set sizes.
+    }
+\end{figure}
+
+The result is unambiguous. The FNR for ICP is high,
+centred at approximately 0.43.
+In stark contrast, the FNR for CRC is tightly controlled,
+with the majority of its distribution falling below the 10\% target level.
+This empirically proves that CRC provides effective and reliable control of the FNR,
+while standard ICP does not.
+It is noted that ICP was not expected to control FNR,
+but this result highlights the limitations of ICP
+when applied to risk-sensitive applications.
+
+To understand the practical implications of these different objectives,
+Figure~\ref{fig:baseline-crc-size} compares the distribution of
+prediction set sizes produced by each method.
+A significant number of predictions are the trivial set of all 14 labels,
+indicating catastrophic model uncertainty.
+The CRC framework, while also favouring small sets,
+almost entirely avoids producing these large, clinically uninformative sets.
+This finding suggests that by focusing on a specific risk (FNR),
+CRC not only achieves a safer outcome
+but also does so with greater overall predictive efficiency,
+as it is not forced into the same `all-or-nothing' predictions as the baseline.
+
+
+\textcolor{red}{TODO: Get example image from dataset and both prediction sets.}
+
+\section{Monotone Risk Control}
+
+By defining and implementing a custom,
+clinically-weighted loss function that assigns a higher penalty to missed pathologies,
+the aim is to evaluate whether CRC can be tailored to better align with clinical priorities.
+It is important to note that the author is not a clinician,
+and these weights do not constitute a clinical standard.
+Rather, they serve as a proof-of-concept to demonstrate the capabilities of the methodology.
+
+\textcolor{red}{TODO: Graph and conclusion.}
+
+\section{High-Probability Guarantees with LTT}
+
+This section provides a direct, empirical comparison between CRC and LTT,
+first by evaluating the reliability of their guarantees on the same monotone risk (FNR) and second,
+by demonstrating LTT's unique ability to control non-monotone risks that are beyond the scope of CRC.
+
+To conduct a direct comparison of the guarantees,
+both CRC and LTT were tasked with controlling the FNR at a target level of \(\alpha = 0.1\).
+For the LTT framework, the high-probability parameter was set to \(\delta = 0.1\),
+meaning it is expected to control the risk with at least 90\% probability.
+
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.40\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/results-crc-ltt-risk}
+        \caption{%
+            Distribution of FNRs for CRC and LTT,
+            with both frameworks targeting an FNR of 10\%.
+        }
+        \label{fig:results-crc-ltt-risk}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.56\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/results-crc-ltt-size}
+        \caption{%
+            Distribution of prediction set sizes for CRC and LTT.
+        }
+        \label{fig:crc-ltt-size}
+    \end{subfigure}
+    \caption{%
+        Comparison of CRC and LTT in terms of FNR and prediction set size,
+        using DenseNet121 on the NIH dataset.
+    }
+\end{figure}
+
+Figure~\ref{fig:results-crc-ltt-risk} presents the distribution of
+the achieved FNR for both frameworks over 100 random test splits.
+The distribution for CRC is centred, as expected, near the nominal 0.1 level.
+However, it exhibits significant variance, with a substantial portion of the trials
+resulting in an FNR that exceeds the target \(\alpha\).
+This empirically demonstrates the nature of an in-expectation guarantee:
+while the average performance is controlled,
+there is no protection against underperformance on any given trial.
+For safety-critical systems, these violations can represent unacceptable failures.
+
+In stark contrast, the LTT framework demonstrates a fundamentally more robust behaviour.
+The distribution of its achieved FNR, as shown in the same figure,
+is sharply truncated at the \(\alpha\) threshold.
+In over 90\% of the trials, the risk was held at or below the target level.
+This is the practical manifestation of the \((1 - \delta)\) high-probability guarantee:
+LTT provides a reliable `risk ceiling',
+ensuring that the system's performance will not degrade beyond the specified level,
+except in a small, user-defined fraction \(\delta\) of cases.
+
+Naturally, this enhanced reliability is not without cost.
+Figure~\ref{fig:crc-ltt-size} presents the corresponding distribution of prediction set sizes.
+To achieve its stronger guarantee,
+LTT produces prediction sets that are slightly larger on average than those from CRC.
+This represents a trade-off:
+a small decrease in the precision of the prediction in exchange for a significant increase
+in its reliability.
+
+\textcolor{red}{TODO: Add example image from dataset and prediction sets.}
+
+% To ground these statistical distributions in a clinical context,
+% a case study was selected from a calibration split where CRC's performance was notably poor,
+% resulting in an achieved FNR of 0.18.
+% Figure 5.9 illustrates a scenario corresponding to this challenging calibration split.
+% The radiograph presents a subtle case of Pleural Effusion
+% that is difficult for the model to detect with high confidence.
+% For this `unlucky' split, the calibration data was not perfectly representative
+% of the model's general performance,
+% causing the CRC algorithm to adopt an overly optimistic threshold \(\lambda\).
+% Consequently, when presented with the test case, its prediction set was empty,
+% thereby missing the critical pathology.
+
+% The LTT framework, when run on the exact same data split,
+% was insulated from this instability.
+% It selected a safer, more conservative threshold
+% and correctly included 'Pleural Effusion' in its prediction set.
+% This case highlights how LTT's high-probability guarantee
+% provides a crucial layer of safety against unfavourable data splits,
+% preventing model failure in scenarios where a less robust framework would have failed.
+
+Beyond offering a stronger guarantee on monotone risks,
+the primary advantage of the LTT framework is its ability to control arbitrary risk functions
+that are non-monotone;
+a capability fundamentally beyond the scope of CRC.
+
+\begin{figure}
+    \centering
+    \includegraphics{figures/results-ltt-risk-control}
+    \caption{%
+        Achieved FDR on the test set, using LTT to control the risk at various target levels.
+        The results demonstrate LTT's ability to manage non-monotone risks effectively.
+    }
+    \label{fig:results-ltt-fdr}
+\end{figure}
+
+Figure~\ref{fig:results-ltt-fdr} presents the results of applying LTT
+to control FDR at various target levels, from \(\alpha = 0.05 \text{ to } \alpha = 0.5\),
+over 100 random test splits.
+As clearly shown, the achieved FDR on the test set
+tracks consistently below the nominal target \(\alpha\).
+This provides strong evidence that the LTT framework
+successfully controls the FDR at the desired level,
+and the fact that the achieved risk does not substantially undercut the target
+indicates that the procedure is not overly conservative.
+It is efficient, providing a level of risk control that is tight
+to the user-specified boundary without being unnecessarily restrictive,
+which would otherwise lead to overly small (and less useful) prediction sets.
+
+This result is of practical importance, confirming that by
+reframing calibration as a multiple hypothesis testing problem,
+LTT successfully circumvents the monotonicity limitation inherent to CRC.
+This empowers practitioners to manage a different, yet equally critical, clinical risk:
+the danger of `alarm fatigue',
+where a model that makes too many false positive predictions
+may lead clinicians to distrust its outputs.
+By allowing for the control of risks like FNR and FDR,
+LTT provides a far more comprehensive proceedure
+for building truly reliable and useful clinical AI systems.
+
+\section{Robustness and Generalisation}
+
+The previous sections have established the comparative performance of ICP, CRC,
+and LTT on the NIH dataset using a DenseNet121 architecture.
+However, for these findings to be truly meaningful,
+they must be robust to changes in the underlying model and the data distribution.
+This section, therefore, aims to validate the generalizability of results
+by systematically evaluating the frameworks across two distinct datasets
+(CheXpert and NIH ChestX-ray14)
+and two different model architectures (DenseNet121 and ResNet50).
