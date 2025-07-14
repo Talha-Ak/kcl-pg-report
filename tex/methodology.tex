@@ -79,12 +79,12 @@ The implementation workflow was as follows:
     These models are configured for multi-label classification across a set of common pathologies.
 
     \item \textbf{Model Inference}:
-    Where this combination of (dataset, model) has not been previously evaluated,
+    Where a combination of (dataset, model) has not been previously evaluated,
     the model is run on the calibration and test sets to generate raw output logits.
-    For each image x in the calibration and test sets,
+    For each image \(x\) in the calibration and test sets,
     the model produced a vector of raw output values (logits).
     These were then passed through a Sigmoid activation function to generate a probability score
-    \(f(x)_k\) between 0 and 1 for each potential pathology k.
+    \(f(x)_k\) between 0 and 1 for each potential pathology \(k\).
 
     \item \textbf{Output Caching \& Calibration}:
     This vector of probabilities is the direct input for the conformal framework being evaluated.
@@ -109,8 +109,206 @@ by using the same splits and random seeds as used in the library's benchmarks.
 The remaining portions of the pipeline were implemented from scratch using
 standard PyTorch and NumPy libraries.
 
-\section{Multilabel CP}
+\section{Implementation of Conformal Frameworks}
 
-\section{Conformal Risk Control}
+\subsection{Inductive Conformal Prediction (ICP)}
 
-\section{Learn then Test}
+To establish a baseline for conformal prediction,
+a class-conditional variant of the Binary Relevance framework was implemented.
+Preliminary investigations revealed that simpler methods using a single,
+globally pooled calibration set were ineffective.
+The wide variance in detection difficulty across the pathologies
+caused the global confidence threshold to be dictated by the hardest-to-detect class,
+resulting in overly lenient and uninformative (but valid!) predictions for all other classes.
+
+To overcome this, the following per-label calibration strategy was adopted.
+This method effectively runs K independent conformal predictors,
+one for each of the K pathologies, creating a uniquely tailored confidence threshold for each one.
+
+The NCM is defined to capture how `surprising' a model's prediction is for a given label.
+For each sample \((X_i, Y_i)\) in the calibration set and for each of the \(K\) pathologies,
+a non-conformity score is calculated.
+Let \(f(X_i)_k\) be the model's sigmoid probability for pathology \(k\). The score \(s_{ik}\) is defined as:
+\[
+    s_{ik} = 1 - \hat{\mathbb{P}}_k(X_i) \quad \text{if } Y_{ik} = 1 \text{ (label is present)}
+\]
+
+Instead of pooling, \(K\) distinct calibration sets of scores, \(S_1, S_2, ..., S_K\), are created.
+The list \(S_k\) contains the \(n_{\text{cal}}\) scores \(s_{ik}\) computed
+for the \(k\)-th pathology over all \(n_{\text{cal}}\) calibration images.
+Each list therefore represents the complete distribution
+of the model's non-conformity for that specific pathology.
+
+From each of these K lists, a unique confidence threshold \(\hat{q}_k\) is calculated
+by taking the \(1-\alpha\) empirical quantile of the scores in \(S_k\).
+We set \(\alpha\) to 0.1 in the baseline case, resulting in a 90\% confidence level.
+This results in \(K\) adaptive thresholds, one for each pathology,
+where a lower \(\hat{q}_k\) indicates that
+the model is generally more confident and accurate for pathology \(k\).
+
+For a new test image \(X_{\text{test}}\),
+the prediction set \(\mathcal{C}(X_{\text{test}})\) is formed by including any pathology \(k\)
+for which the model's output is sufficiently confident to be considered a positive prediction.
+A label is included if its non-conformity score
+under the \emph{positive} assumption is less than or equal to its unique calibrated threshold:
+% TODO \text{test}
+\[
+    C(X_{\text{test}}) = \left\{ k \mid 1 - f(X_{\text{test}})_k \leq \hat{q}_k \right\}
+\]
+
+This method provides a per-label guarantee on the correctness of the binary decision.
+Specifically, for any given pathology \(k\), the probability that our prediction for it
+(either including it or not including it in the set) is correct is at least $1-\alpha$.
+
+It is critical to acknowledge the limitation that this approach, by design,
+treats each pathology as an independent prediction problem.
+This assumption is known to be false in a clinical context;
+many pathologies are highly correlated.
+%TODO - mention the paper that shows this
+However, a key strength of the Conformal Prediction framework is
+its robustness to the underlying model.
+The per-label guarantee remains mathematically valid
+even though the method does not explicitly account for the dependencies between labels.
+
+The practical consequence of ignoring these known dependencies
+is a likely loss of statistical efficiency.
+A model that cannot `borrow strength' from the presence of a correlated pathology
+must rely solely on the direct evidence for each prediction.
+To maintain the \(1-\alpha\) coverage guarantee under this limitation,
+the framework must inherently be more cautious.
+This caution typically manifests as more conservative (i.e., larger) prediction sets
+than what might be achievable by a more complex, dependency-aware model.
+This trade-off is acceptable for the purposes of this project,
+as the primary goal is to evaluate the effectiveness of the risk control frameworks
+rather than to achieve the absolute best performance on the multi-label classification task.
+
+\subsection{Conformal Risk Control}
+
+This section details the implementation of the Conformal Risk Control (CRC) framework.
+The objective is to move beyond simple miscoverage
+and control the expected value of clinically relevant, monotone loss functions:
+the False Negative Rate (FNR) and a clinically-weighted loss.
+
+To control the overall FNR, the loss for a single sample \((X_i, Y_i)\)
+was defined as the fraction of true pathologies that were missed by the prediction set.
+This directly measures the model's failure to identify existing conditions:
+\begin{equation}
+    \ell_{\text{FNR}}(C_\lambda(X_i), Y_i) = 1 - \frac{|Y_{i,\text{true}} \cap C_\lambda(X_i)|}{|Y_{i,\text{true}}|}
+    \label{eq:fnr_loss}
+\end{equation}
+where \(Y_{i,\text{true}}\) is the set of true labels for the \(i\)-th sample.
+The value of \(B\) is set to 1, as this loss is bounded within \([0, 1]\).
+
+To address the aim of managing more nuanced clinical risks,
+a custom-weighted loss was implemented.
+This function assigns a higher penalty for failing to detect more critical pathologies.
+
+The weights were determined by categorizing pathologies into tiers based on
+their typical clinical acuity and potential severity if missed~\cite{Kaviani2022Frequency,Gefter2023Commonly}.
+Findings that are both acute and of high severity
+(e.g., a potential malignancy or medical emergency)
+were assigned the highest weight, while more chronic or incidental findings received lower weights.
+This tiered approach to clinical risk prioritization is summarized in Table~\ref{tab:monotone-weights}.
+
+\begin{table}
+    \centering
+    \begin{tabular}{l l l}
+        \toprule
+        Tier & Weight & Pathologies \\
+        \midrule
+        1 (Critical) & 5 & Mass, Nodule, Lung Lesion, Pneumothorax, Effusion \\
+        2 (High) & 3 & Consolidation, Pneumonia, Edema, Cardiomegaly, Enlarged Cardiomediastinum \\
+        3 (Moderate) & 2 & Fracture, Fibrosis \\
+        4 (Other) & 1 & Hernia \\
+        \bottomrule
+    \end{tabular}
+    \caption{%
+        Custom weights assigned to each pathology for the clinically-weighted loss function,
+        reflecting their clinical risk and severity.
+    }
+    \label{tab:monotone-weights}
+\end{table}
+
+The loss is formulated as:
+\[
+    \ell_{\text{wFNR}}(C_\lambda(X_i), Y_i) = \frac{\sum_{k \in Y_{i,\text{missed}}} w_k}{\sum_{k \in Y_{i,\text{true}}} w_k}
+\]
+% The weights \(w_k\) were set to \(2.0\) for Pleural Effusion and \(1.0\) for all other pathologies.
+\(Y_{i,\text{missed}}\) represents the set of true pathologies for sample \(i\)
+that are not in the prediction set \(C_\lambda(X_i)\).
+This construction remains bounded in \([0, 1]\) and preserves the critical monotonicity property.
+
+For each of the two loss functions defined above,
+the following computational steps were performed to determine the calibrated parameter,
+\(\hat{\lambda}\):
+\begin{enumerate}
+    \item \textbf{Discretization:}
+    A one-dimensional grid of \(1000\) candidate \(\lambda\) values was created,
+    evenly spaced across the interval \([0, 1]\).
+
+    \item \textbf{Empirical Risk Calculation:}
+    For each candidate \(\lambda\), the empirical risk, \(\hat{R}_n(\lambda)\) was computed
+    by averaging the corresponding loss value over all samples in the calibration dataset.
+
+    \item \textbf{Parameter Selection:} A binary search was performed over the discretized grid
+    to find the minimum \(\lambda\) that satisfied the risk control condition
+    specified in the CRC framework.
+    This value was selected as the final calibrated parameter, \(\hat{\lambda}\).
+\end{enumerate}
+
+This \(\hat{\lambda}\) was then used to generate the final prediction sets
+for all images in the unseen test set.
+
+\subsection{Learn then Test (LTT)}
+
+The Learn then Test (LTT) framework was implemented to provide high-probability guarantees
+for both monotone and non-monotone risks.
+This section details the specific components, hypothesis testing procedures,
+and parameter selection strategies used in the experimental pipeline.
+
+The prediction set function, \(\mathcal{C}_\lambda(x)\),
+was defined identically to the one in the CRC implementation.
+The parameter space \(\Lambda\) was formed by creating a uniform,
+discretized grid of \(1000\) candidate \(\lambda\) values over the interval \([0, 1]\).
+
+The framework was used to control two distinct risks
+The FNR was evaluated using the loss function defined in Equation~\ref{eq:fnr_loss}.
+The non-monotone False Discovery Rate (FDR) risk was evaluated
+using its corresponding loss function, \(l_{\text{FDR}}\):
+\[
+    l_{\text{FDR}}(\mathcal{C}_\lambda(X_i), \mathcal{Y}_i) = \frac{|\mathcal{C}_\lambda(X_i) \setminus \mathcal{Y}_{i, \text{true}}|}{|\mathcal{C}_\lambda(X_i)|} \quad \text{if } |\mathcal{C}_\lambda(X_i)| > 0, \text{ else } 0
+\]
+
+This loss quantifies the proportion of predicted pathologies that are incorrect for a given sample.
+
+For each candidate \(\lambda \in \Lambda\),
+a p-value was computed to quantify the statistical evidence against the null hypothesis
+\(H_\lambda: R(\lambda) > \alpha\).
+
+The p-values were calculated using Hoeffding's inequality.
+For a given empirical risk \(\hat{R}_n(\lambda)\) computed on a calibration set of size \(n\),
+the p-value is given by:
+\[
+    p_\lambda = \exp\left(-2n\left(\max\{0, \alpha - \hat{R}_n(\lambda)\}\right)^2\right)
+    \label{eq:hoeffding_pvalue}
+\]
+While more powerful bounds such as the Hoeffding-Bentkus inequality exist
+and could be used here to potentially increase statistical power,
+the standard Hoeffding bound was chosen for this project
+for its straightforward implementation.
+
+With p-values generated for all candidate hypotheses,
+the Bonferroni correction was applied to control the Family-Wise Error Rate (FWER).
+
+The output of the LTT calibration is a set, \(\hat{\Lambda}\), of validated \(\lambda\) parameters.
+To generate a single, final prediction for the test set,
+a specific \(\hat{\lambda}\) must be chosen from this set.
+For all experiments, the least conservative valid parameter was selected:
+\[
+    \hat{\lambda} = \min(\hat{\Lambda})
+\]
+% TODO code?
+This choice corresponds to the highest probability threshold
+(and thus the smallest average prediction set size)
+that is still guaranteed to control the target risk at level $\alpha$ with probability $1-\delta$.
+This selection strategy aims to maximize the clinical utility and precision of the final output.
