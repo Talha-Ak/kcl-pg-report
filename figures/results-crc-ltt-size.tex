@@ -1,0 +1,66 @@
+\documentclass[tikz]{standalone}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+\begin{document}
+
+\begin{tikzpicture}
+\begin{axis}[
+    width=12cm,
+    height=7cm,
+    ybar,
+    xtick=data,
+    ylabel={Frequency},
+    % xticklabel style={
+    %     font=\footnotesize,
+    %     rotate=45,
+    %     anchor=east
+    % },
+    xlabel={Set Size},
+    ymin=0,
+    enlarge x limits=0.10,
+    legend pos=north east,
+]
+\addplot [draw=red, fill=red!30] coordinates {
+  (0, 488)
+  (1, 1900)
+  (2, 1153)
+  (3, 824)
+  (4, 641)
+  (5, 625)
+  (6, 539)
+  (7, 602)
+  (8, 686)
+  (9, 1022)
+  (10, 1115)
+  (11, 746)
+  (12, 594)
+  (13, 187)
+  (14, 6)
+};
+\addlegendentry{CRC}
+
+\addplot [draw=green, fill=green!30] coordinates {
+    (0, 580)
+    (1, 1538)
+    (2, 1132)
+    (3, 945)
+    (4, 810)
+    (5, 733)
+    (6, 658)
+    (7, 612)
+    (8, 650)
+    (9, 975)
+    (10, 1097)
+    (11, 702)
+    (12, 524)
+    (13, 162)
+    (14, 10)
+};
+\addlegendentry{LTT}
+
+
+\end{axis}
+\end{tikzpicture}
+
+\end{document}
