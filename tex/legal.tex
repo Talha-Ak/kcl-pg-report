@@ -1,2 +1,78 @@
 \chapter{Legal, Social, Ethical, and Professional Issues}
 \label{ch:legal}
+
+The deployment of AI systems in high-stakes domains
+like healthcare and clinical decision-making
+carries significant professional and ethical responsibilities.
+This chapter analyses these issues using the BCS
+Code of Conduct~\cite{bcs-code-of-conduct} as guiding principles.
+
+\section{Public Safety and Wellbeing}
+
+The primary ethical obligation of any AI tool, regardless of its domain, is to `do no harm'.
+In the context of healthcare, this means ensuring that AI systems
+do not compromise patient safety or wellbeing.
+A misdiagnosis or failure from an AI system
+to identify a critical condition can have dire consequences.
+
+It is therefore imperative that clinicians are not misled by a system's outputs.
+A single output should not be trusted blindly;
+rather, clinicians should augment their decision-making
+with the system's predictions,
+using them as one of many tools in their diagnostic arsenal.
+This is particularly important in the context of chest X-rays,
+where multiple conditions may be present simultaneously,
+and some conditions may be harder to identify than others.
+Providing a prediction set serves as an indication of the system's confidence,
+where a larger set indicates lower confidence, and therefore requires higher scrutiny.
+
+As highlighted repeatedly in this report,
+simple accuracy or coverage metrics are insufficient
+to guarantee patient safety.
+This work focuses on moving beyond coverage, controlling for more
+relevant risk metrics like the False Negative Rate (FNR).
+By ensuring that the FNR is controlled at a clinically acceptable level,
+the system can be trusted to not overlook critical conditions,
+thereby safeguarding patient wellbeing.
+
+For the Chest X-ray domain, CRC's `in-expectation' control of the FNR
+was shown to be a significant improvement over standard ICP.
+However, for a patient, it means that while the system is reliable on average,
+the risk could be higher for any single prediction.
+
+LTT's \(1 - \delta\) high-probability guarantee
+provides a more robust assurance.
+It ensures that the system's performance will not degrade beyond the specified level,
+providing a stronger guarantee for clinical use.
+
+\section{Algorithmic Bias}
+
+The datasets used in this work, while large, are not globally representative.
+Models trained on these datasets may exhibit biases
+that could lead to unequal performance across different demographic groups.
+An avenue for future work would be group-conditional risk control,
+where the risk is controlled separately for different demographic groups.
+This would allow one to guarantee, for example, that the FNR is controlled
+at a some level (e.g., 10\%) for all demographic groups,
+rather than just on average across the entire population.
+
+\section{Data Privacy and Security}
+
+CXR datasets could contain sensitive patient information, potentially breaching their privacy.
+All datasets used in this work (CheXpert~\cite{irvin2019chexpert},
+NIH ChestX-ray14~\cite{wang2017chestxray}, PadChest~\cite{Bustos2020padchest})
+are publicly available, de-identified, and anonymized datasets.
+Any real-world deployment of such a system would require strict adherence
+to data protection regulations like GDPR.
+
+
+\section{Professional Conduct and Integrity}
+
+This project was made possible by leveraging a rich ecosystem of existing tools and datasets.
+In accordance with the BCS principle of respecting the intellectual property rights of others,
+all external resources have been explicitly cited.
+No claim is made to originality in the datasets or the underlying models,
+but rather the implementation, rigorous comparative evaluation,
+and analysis of conformal methods in the specific context of multi-label chest X-ray classification.
+
+\textcolor{red}{TODO: Does this section need more content?}
