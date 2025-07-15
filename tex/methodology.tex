@@ -22,10 +22,13 @@ in Figure~\ref{fig:design-pipeline}.
 \label{sec:dataset-preparation}
 
 As outlined in the experimental design (Chapter \ref{ch:design}),
-the CheXpert and NIH ChestX-ray14 datasets were loaded using the \texttt{torchxrayvision} library.
+the CheXpert NIH ChestX-ray14, and PadChest datasets
+were loaded using the \texttt{torchxrayvision} library.
 This library provides a standardized interface that handles the complexities of these datasets,
-such as mapping labels to a common set of conditions
+such as mapping labels to a common set of conditions (especially in the case of PadChest),
 and applying necessary image transformations.
+Downsampled versions of the datasets were used to reduce computational and memory requirements
+where available.
 
 The CheXpert dataset presented a unique challenge due to its multi-class labelling system,
 where each finding could be marked as \emph{present}, \emph{absent}, or \emph{uncertain}.
@@ -202,6 +205,9 @@ The value of \(B\) is set to 1, as this loss is bounded within \([0, 1]\).
 To address the aim of managing more nuanced clinical risks,
 a custom-weighted loss was implemented.
 This function assigns a higher penalty for failing to detect more critical pathologies.
+It is important to note that the author is not a clinician,
+and these weights do not constitute a clinical standard.
+Rather, they serve as a proof-of-concept to demonstrate the capabilities of the methodology.
 
 The weights were determined by categorizing pathologies into tiers based on
 their typical clinical acuity and potential severity if missed~\cite{Kaviani2022Frequency,Gefter2023Commonly}.
