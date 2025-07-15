@@ -20,9 +20,6 @@ The dashed red line indicates the nominal coverage target of 90\% \((1 - \alpha)
     \includegraphics{figures/results-baseline-coverage}
     \caption{%
         Achieved class-conditional coverage rates, using DenseNet121 on the NIH dataset.
-        The results confirm the validity of the implementation,
-        as the empirical coverage for every class meets or exceeds
-        the 90\% nominal level (red line).
     }
     \label{fig:baseline-coverage}
 \end{figure}
@@ -79,9 +76,9 @@ In stark contrast, the FNR for CRC is tightly controlled,
 with the majority of its distribution falling below the 10\% target level.
 This empirically proves that CRC provides effective and reliable control of the FNR,
 while standard ICP does not.
-It is noted that ICP was not expected to control FNR,
-but this result highlights the limitations of ICP
-when applied to risk-sensitive applications.
+This result, while expected, is unambiguous:
+standard Inductive Conformal Prediction is unsuitable for clinical or risk-sensitive applications
+where controlling specific error types like the False Negative Rate is paramount.
 
 To understand the practical implications of these different objectives,
 Figure~\ref{fig:baseline-crc-size} compares the distribution of
@@ -100,14 +97,47 @@ as it is not forced into the same `all-or-nothing' predictions as the baseline.
 
 \section{Monotone Risk Control}
 
-By defining and implementing a custom,
-clinically-weighted loss function that assigns a higher penalty to missed pathologies,
-the aim is to evaluate whether CRC can be tailored to better align with clinical priorities.
-It is important to note that the author is not a clinician,
-and these weights do not constitute a clinical standard.
-Rather, they serve as a proof-of-concept to demonstrate the capabilities of the methodology.
+To align the CRC framework with clinical priorities,
+a weighted loss function was designed (Table~\ref{tab:monotone-weights})
+to selectively reduce the FNR for high-risk pathologies.
+The expected outcome was a decrease in FNR for heavily weighted classes,
+offset by a potential minor increase for unweighted classes.
 
-\textcolor{red}{TODO: Graph and conclusion.}
+\begin{figure}
+    \centering
+    \includegraphics{figures/results-weighted-crc}
+    \caption{%
+        Comparison of FNR for standard CRC and weighted CRC,
+        using DenseNet121 on the CheXpert dataset.
+    }
+    \label{fig:weighted-crc}
+\end{figure}
+
+Figure~\ref{fig:weighted-crc} presents the per-pathology FNR
+for both the standard and weighted CRC models.
+The results directly contradict the initial hypothesis.
+Contrary to expectations,
+the application of weighted loss led to a systemic increase in FNR across all pathologies.
+This paradoxical effect was observed regardless of a pathology's assigned weight.
+
+The counter-intuitive result could be explained from the core mechanism of the CRC algorithm.
+The weighted loss function elevates the empirical risk during calibration,
+forcing the selection of a larger, more conservative global parameter \(\lambda\).
+This, in turn, establishes a stricter universal probability threshold \(1 - \lambda\)
+that is applied to all pathologies during inference.
+Therefore, the model is globally more sceptical,
+leading to smaller sets and a higher FNR for all classes.
+
+The results of the weighted loss experiment carry important implications
+for the practical application of Conformal Risk Control in high-stakes environments.
+The seemingly intuitive method of using a weighted loss function
+to selectively reduce risk for specific subgroups
+can be ineffective and potentially counter-productive within the standard CRC framework.
+It cannot be assumed that cannot assume that
+modifying the loss function will result in a simple, localized change to the risk profile.
+Changes to the loss function can have unexpected,
+system-wide consequences on the final predictions by altering
+the single calibration parameter \(\hat{\lambda}\) that governs all decisions.
 
 \section{High-Probability Guarantees with LTT}
 
@@ -160,10 +190,12 @@ In stark contrast, the LTT framework demonstrates a fundamentally more robust be
 The distribution of its achieved FNR, as shown in the same figure,
 is sharply truncated at the \(\alpha\) threshold.
 In over 90\% of the trials, the risk was held at or below the target level.
-This is the practical manifestation of the \((1 - \delta)\) high-probability guarantee:
-LTT provides a reliable `risk ceiling',
-ensuring that the system's performance will not degrade beyond the specified level,
-except in a small, user-defined fraction \(\delta\) of cases.
+
+The practical implication of these distributions is profound.
+The significant variance of CRC means that on any given day or with any given batch of patients,
+the system could underperform and exhibit a clinically unacceptable False Negative Rate.
+LTT's \(1 - \delta\) high-probability guarantee acts as a `risk ceiling',
+providing the robust assurance that performance will not degrade beyond the specified level.
 
 Naturally, this enhanced reliability is not without cost.
 Figure~\ref{fig:crc-ltt-size} presents the corresponding distribution of prediction set sizes.
@@ -205,7 +237,6 @@ a capability fundamentally beyond the scope of CRC.
     \includegraphics{figures/results-ltt-risk-control}
     \caption{%
         Achieved FDR on the test set, using LTT to control the risk at various target levels.
-        The results demonstrate LTT's ability to manage non-monotone risks effectively.
     }
     \label{fig:results-ltt-fdr}
 \end{figure}
@@ -236,11 +267,94 @@ for building truly reliable and useful clinical AI systems.
 
 \section{Robustness and Generalisation}
 
-The previous sections have established the comparative performance of ICP, CRC,
-and LTT on the NIH dataset using a DenseNet121 architecture.
+The previous sections have established the comparative performance of CRC,
+and LTT using a DenseNet121 foundational model.
 However, for these findings to be truly meaningful,
 they must be robust to changes in the underlying model and the data distribution.
 This section, therefore, aims to validate the generalizability of results
-by systematically evaluating the frameworks across two distinct datasets
-(CheXpert and NIH ChestX-ray14)
-and two different model architectures (DenseNet121 and ResNet50).
+by systematically evaluating the frameworks across distinct datasets
+(CheXpert, NIH ChestX-ray14, PadChest)
+and different models (DenseNet121, ResNet50, CheXpert).
+Comparing results across these heterogeneous configurations requires consideration.
+The datasets and models feature different numbers of possible labels.
+Therefore, to ensure a fair comparison of prediction set efficiency,
+the Normalized Prediction Set Size is reported,
+calculated as the average set size divided by the number of labels
+applicable to that specific model-dataset pair.
+Risk metrics like FNR and FDR, being ratios, are already directly comparable.
+
+\begin{table}
+    \centering
+    \begin{tabular}{llrrrrrrrr}
+        \toprule
+        \multirow{2}{*}[-0.2em]{Dataset} & \multirow{2}{*}[-0.2em]{Model} &
+        \multicolumn{2}{c}{CRC} & \multicolumn{2}{c}{wCRC} &
+        \multicolumn{2}{c}{LTT (FNR)} & \multicolumn{2}{c}{LTT (FDR)} \\
+
+        \cmidrule(lr){3-4} \cmidrule(lr){5-6} \cmidrule(lr){7-8} \cmidrule(lr){9-10}
+
+        & & \multicolumn{1}{c}{Risk} & \multicolumn{1}{c}{Size}
+        & \multicolumn{1}{c}{Risk} & \multicolumn{1}{c}{Size}
+        & \multicolumn{1}{c}{Risk} & \multicolumn{1}{c}{Size}
+        & \multicolumn{1}{c}{Risk} & \multicolumn{1}{c}{Size} \\
+        \midrule
+        NIH      & DenseNet & 0.0876 & 0.41 & 0.0877 & 0.40 & 0.0900 & 0.40 & 0.0798 & 0.01 \\
+                 & ResNet   & 0.1004 & 0.32 & 0.1010 & 0.28 & 0.0890 & 0.34 & 0.0799 & 0.01 \\
+                 & CheXpert & 0.0953 & 0.19 & 0.0963 & 0.18 & 0.0900 & 0.22 & 0.0798 & 0.03 \\
+        \addlinespace
+        CheXpert & DenseNet & 0.0891 & 0.68 & 0.0634 & 0.64 & 0.0841 & 0.70 & 0.0683 & 0.04 \\
+                 & ResNet   & 0.0000 & 1.00 & 0.0000 & 1.00 & 0.0000 & 1.00 & 0.0728 & 0.01 \\
+                 & CheXpert & 0.0950 & 0.58 & 0.0742 & 0.53 & 0.0862 & 0.58 & 0.0727 & 0.06 \\
+        \addlinespace
+        PadChest & DenseNet & 0.0890 & 0.13 & 0.0888 & 0.11 & 0.0849 & 0.16 & 0.0729 & 0.01 \\
+                 & ResNet   & 0.0950 & 0.29 & 0.0966 & 0.22 & 0.0845 & 0.33 & 0.0734 & 0.01 \\
+                 & CheXpert & 0.0955 & 0.04 & 0.0959 & 0.04 & 0.0864 & 0.06 & 0.0726 & 0.03 \\
+        \bottomrule
+    \end{tabular}
+    \caption{%
+        \textcolor{red}{(TODO: Show raw and normalised? Raw only?)}
+        Performance of conformal frameworks (CRC, weighted CRC (wCRC), and LTT)
+        across different configurations. `Risk' refers to the achieved risk (FNR or FDR),
+        while `Size' indicates the normalised average size of the prediction sets.
+    }
+    \label{tab:conformal-comparison}
+\end{table}
+
+Table~\ref{tab:conformal-comparison} provides a comprehensive overview of the performance
+of each conformal framework across all seven experimental configurations.
+
+The clearest finding that can be seen is the general performance
+of risk control frameworks across the configurations.
+LTT consistently maintains an empirical risk below the target level
+of \(\alpha = 0.1\) for both FNR and FDR, with the highest achieved risk being 0.09.
+Similarly, CRC risks sit close to the target level, with slight deviations
+such as ResNet on NIH.
+
+This analysis also illuminates the inherent trade-off
+between the strength of a statistical guarantee and its cost in predictive efficiency,
+which is captured by the normalized set size.
+A clear trend emerges when comparing CRC to LTT for FNR control.
+The stronger high-probability guarantee of LTT
+consistently necessitates a larger normalized set size.
+On the PadChest dataset with the ResNet model, for example,
+CRC achieved its goal with a normalized set size of 0.29,
+whereas LTT required a size of 0.33.
+This represents the cost of ensuring the risk is controlled in nearly every instance,
+not just on average.
+
+The configuration of ResNet on the CheXpert dataset provides an insight
+into the behaviour of these frameworks when an underlying model is not well-suited for the task.
+The results for CRC, weighted CRC, and LTT (FNR) report a risk of 0.0000
+and a normalized set size of 1.00.
+This indicates that to satisfy the requested risk guarantee,
+the only valid solution was to produce a trivial prediction set
+containing every possible label for every sample.
+While this result technically satisfies the statistical guarantee,
+the output is clinically useless and reveals that the ResNet model, in this context for this dataset,
+fails to provide a sufficiently confident signal to distinguish between pathologies.
+Conformal methods will always prioritize the statistical guarantee
+over the utility of the prediction,
+and in doing so, they can serve as a diagnostic tool for model-task mismatch.
+It is noteworthy that even in this failure,
+the LTT (FDR) framework still produced an (almost) non-trivial result,
+underscoring that controlling for discovery rate is a less demanding task for the model.
