@@ -57,6 +57,7 @@
                 svn-prov
                 # booktabs
                 booktabs
+                multirow
                 # violin plots
                 tikzviolinplots
                 stringstrings
