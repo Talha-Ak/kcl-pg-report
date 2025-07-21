@@ -1,4 +1,4 @@
-\chapter{Specification \& Design}
+\chapter{Specification and Design}
 \label{ch:design}
 
 \section{Research Questions}
@@ -11,27 +11,23 @@ The primary research questions are:
     \item How does \gls{icp} perform when adapted for a multi-label context,
     and what is the associated cost in terms of prediction set size and clinically relevant risks?
 
+    \item What is the improvement in relevant risk control
+    when using \gls{crc} over \gls{icp} for multi-label chest X-ray classification?
+
+    \item How is the effectiveness of \gls{crc} impacted
+    when applied to more nuanced risk functions
+    where missing more critical pathologies incurs a higher penalty?
+
     \item How do CRC and LTT compare in their ability to control a clinically critical,
     monotone risk like the False Negative Rate (FNR)?
     Is the high-probability guarantee of LTT achievable without a significant loss of utility
     (i.e., overly large prediction sets) compared to CRC's guarantee in expectation?
 
-    % \item Can CRC be used to target specific clinically meaningful risks,
-    % such as minimizing the False Negative Rate (FNR) for high-priority pathologies?
-
     \item Leveraging the unique capability of the LTT framework,
     how effectively can the \glsxtrlong{fdr} (a non-monotone risk) be controlled
     for multi-label \gls{cxr} classification?
 
-    \item How is the effectiveness of \gls{crc} and \gls{ltt} impacted
-    when applied to more nuanced risk functions
-    where missing more critical pathologies incurs a higher penalty?
-
-    % \item How does the choice of loss function (e.g., class-weighted loss)
-    % impact the effectiveness of CRC in controlling specific types of risk?
-
-    \item How does the effect of CRC (and the produced conformal scores)
-    vary across different model architectures?
+    \item How does the effect of CRC and LTT vary across different model architectures?
 
 
 \end{itemize}
