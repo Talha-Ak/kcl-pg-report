@@ -1,3 +1,30 @@
 \chapter*{Abstract}
 
-TODO
+This thesis addresses the critical need for reliable uncertainty quantification
+in multi-label chest X-ray (CXR) classification,
+where the clinical cost of errors is high.
+Standard Conformal Prediction (CP) provides a baseline guarantee of marginal coverage
+but fails to control for specific, clinically relevant risks such as false negatives.
+To overcome this, an implementation and systematic evaluation
+of two advanced conformal frameworks is presented:
+Conformal Risk Control (CRC),
+which controls the expected value of monotone risks like the False Negative Rate (FNR),
+and Learn then Test (LTT), which offers high-probability guarantees for any risk,
+including non-monotone metrics like the False Discovery Rate (FDR).
+
+The main work involved a comparative analysis of these frameworks on large-scale CXR datasets
+(CheXpert, NIH ChestX-ray14, and PadChest)
+using several deep learning models (DenseNet121 and ResNet50).
+Key contributions include the implementation and validation of these methods
+for controlling FNR and FDR,
+as well as an investigation into a clinically-weighted risk function
+to prioritize critical pathologies.
+
+Findings demonstrate that while standard CP is unsuitable
+for clinical applications due to its high FNR, CRC effectively controls this risk.
+Furthermore, LTT provides a more robust, high-probability guarantee for FNR
+and successfully controls the non-monotone FDR, a capability beyond CRC's scope.
+The results highlight a clear trade-off between the strength of the statistical guarantee
+and the size of the prediction set,
+offering crucial insights into the practical application of these advanced
+uncertainty quantification techniques in safety-critical medical imaging tasks.
