@@ -19,7 +19,9 @@
     xlabel={Set Size},
     ymin=0,
     enlarge x limits=0.10,
-    legend pos=north west,
+    legend style={
+        at={(0.59,0.95)},
+    },
 ]
 
 \addplot coordinates {
@@ -39,7 +41,7 @@
     (13, 1101)
     (14, 1735)
 };
-\addlegendentry{Baseline}
+\addlegendentry{ICP}
 
 \addplot coordinates {
   (0, 488)
