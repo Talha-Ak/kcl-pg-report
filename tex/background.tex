@@ -10,7 +10,7 @@ requires that the joint distribution of the data remains invariant under permuta
 Under this assumption, CP leverages the idea of conformity to assess
 how well a new, unseen data point fits with previously observed data.
 A nonconformity score \(s(x, y) \in \mathbb{R}\),
-quantifies how ``atypical'' a potential prediction is relative to past examples.
+quantifies how `atypical' a potential prediction is relative to past examples.
 
 The choice of the nonconformity measure (NCM) is critical
 for the practical utility of CP~\cite{kato2023measures}.
@@ -168,8 +168,14 @@ requiring each of the K independent classifiers to meet
 a stricter significance level of \(\frac{\alpha}{K}\).
 The final prediction for a test instance is the union of all labels
 predicted as positive by their respective conformal classifiers.
-This method is computationally efficient
-but ignores potential correlations between labels.
+A comparative study by Wang et al.~\cite{wang2015comparison}
+found that a BR-based approach
+to multi-label conformal prediction offers a compelling trade-off
+between performance and efficiency.
+While its predictive efficiency was competitive,
+the BR method was significantly more computationally efficient than more complex approaches,
+particularly on datasets with many labels.
+However, this method does ignore potential correlations between labels.
 
 A third strategy, known as \emph{Instance Reproduction (IR)}~\cite{wang2014mlcp},
 transforms the multi-label problem into a single-label problem
@@ -186,7 +192,7 @@ the dependencies between labels for a given instance.
 
 While these methods provide valid frameworks for adapting \gls{cp} to multi-label settings,
 they share a fundamental limitation:
-they are all designed to control the overall miscovarage rate.
+they are all designed to control the overall covarage rate.
 In safety-critical domains like medical diagnostics, this assumption is untenable.
 The clinical cost of different errors is highly asymmetric, as certain false negatives
 (e.g., missing a severe condition) can have far more severe consequences than
@@ -221,7 +227,7 @@ They do not, by default, offer direct control over
 specific, potentially more critical types of errors,
 such as the rate of false negatives for high-risk conditions.
 This control over specific, asymmetric risks
-is precisely the challenge addressed by Conformal Risk Control (CRC).
+is precisely the challenge addressed by \gls{crc} and \gls{ltt}.
 
 While these methods offer general advancements for \gls{cp} in image tasks,
 specific adaptations tailored to the nuances of medical imaging have also emerged.
@@ -253,8 +259,6 @@ minimizing the \gls{fnr} for detecting a severe condition.
 This is the gap that \gls{crc} aims to fill,
 by controlling the expected value of a user-defined, clinically relevant loss function,
 moving beyond general coverage guarantees to manage specific diagnostic risks.
-
-% TODO: Multilabel CP
 
 \section{Conformal Risk Control}
 
@@ -385,7 +389,7 @@ the proportion of false positives can increase,
 violating the monotonicity requirement.
 CRC, in its standard form, cannot provide guarantees for such risks.
 
-Furthermore, CRC guarantees control the risk in expectation \((\mathbb{E}[L] \le \alpha)\).
+Furthermore, CRC guarantees control the risk \emph{in expectation} \((\mathbb{E}[L] \le \alpha)\).
 This means that over many repeated experiments,
 the average loss will be below the threshold \(\alpha\).
 While mathematically sound, in safety-critical applications like medical diagnosis,
@@ -411,6 +415,59 @@ Two notable frameworks provide high-probability guarantees:
     but also handle potentially non-monotone risk functions.
 \end{itemize}
 
+\subsection{Theoretical Extension for Monotone Non-Decreasing Risks}
+
+A key limitation of the standard \gls{crc} framework
+is its requirement that the loss function be monotonically non-increasing
+with respect to its tuning parameter, \(\lambda\).
+This property is leveraged by the calibration procedure,
+which selects the infimum (the smallest) \(\lambda\) that satisfies the risk control condition,
+guaranteeing that all larger, more conservative \(\lambda\) values are also valid.
+
+However, this requirement precludes the direct control of important metrics
+that are naturally non-decreasing, such as prediction set size.
+In these cases, a larger \(\lambda\) might correspond to a more aggressive prediction set,
+which increases the associated risk.
+
+Theoretically, the CRC framework can be adapted to control such non-decreasing loss functions
+with a key modification to the parameter selection step.
+Formally, where we assume \(L_i(\lambda)\) is non-decreasing in \(\lambda\), and
+\[
+    L_i(\lambda_{\text{min}}) \leq \alpha, \qquad \sup_{\lambda} L_i(\lambda) \leq B < \infty,
+\]
+then
+\[
+    \mathbb{E}[L_i(\hat{\lambda})] \leq \alpha,
+\]
+with the adaptation that instead of finding the smallest \(\lambda\) that satisfies the condition,
+one would find the supremum (the largest) \(\lambda\) that meets the risk control condition:
+\[
+    \hat{\lambda} =
+    \sup \left\{ \lambda \mid \frac{n}{n+1} * \hat{R}_n(\lambda) + \frac{B}{n+1} \leq \alpha \right\}.
+\]
+
+By selecting the largest valid \(\lambda\),
+the guarantee ensures that no less conservative (smaller) \(\lambda\) value would have been chosen,
+which is the correct analogue for a non-decreasing risk.
+This adaptation would allow for the direct control of risks
+that grow with the conservatism of the model.
+While this extension is not empirically validated within the scope of this project,
+it represents a promising direction for future research.
+
+However, it is critical to note that this theoretical extension
+still fundamentally relies on monotonicity.
+This is a significant limitation,
+as many of the most important metrics in clinical and statistical analysis are non-monotonic.
+The False Discovery Rate (FDR) is a principal example.
+The FDR does not have a consistent monotonic relationship with the prediction set size;
+as a set grows, the addition of a correct prediction can decrease the FDR,
+while the addition of an incorrect one will likely increase it.
+
+Therefore, FDR cannot be controlled by the standard CRC procedure
+or the theoretical extension described here.
+To handle such complex, non-monotonic risks,
+a more general and powerful framework is required.
+
 \section{Learn then Test (LTT)}
 
 The \gls{ltt} framework, proposed by Angelopoulos et al.~\cite{angelopoulos2022ltt},
@@ -421,13 +478,23 @@ It achieves this by reframing the problem of calibrating the parameter \(\lambda
 as a multiple hypothesis testing task.
 
 The goal of \gls{ltt} is to find a parameter \(\hat{\lambda}\) that yields an
-\((\alpha, \delta)\)-risk-controlling prediction (RCP) guarantee.
-Formally, this means the selected prediction function \(\mathcal{C}_{\hat{\lambda}}(x)\) must satisfy:
-\begin{equation}
-    \mathbb{P}\left( R(\hat{\lambda}) \leq \alpha \right) \geq 1 - \delta,
-\end{equation}
+\((\alpha, \delta)\)-risk-controlling prediction (RCP) guarantee
 where \(\alpha\) is the desired risk level and \(\delta\) is the acceptable probability
 of failing to control that risk.
+Formally, this means the selected prediction function
+\(\mathcal{C}_{\hat{\lambda}}(x)\) must satisfy:
+\[
+    \mathbb{P} (R(\hat{\lambda}) \leq \alpha) \geq 1 - \delta,
+\]
+where the risk \(R(\hat{\lambda})\) is the expected loss over a new test point,
+conditional on the calibration set \(D_{\text{cal}}\),
+and the outer probability is over the random draw of the calibration set itself.
+To be more precise, the guarantee can be expanded as:
+\begin{equation}
+    \mathbb{P}_{D_{\text{cal}}} \left( \mathbb{E}_{(X_{\text{test}}, Y_{\text{test}})}
+    \left[ l(C_{\hat{\lambda}}(X_{\text{test}}), Y_{\text{test}}) \mid D_{\text{cal}} \right]
+    \leq \alpha \right) \geq 1 - \delta.
+\end{equation}
 
 \gls{ltt} operates as follows:
 
@@ -444,8 +511,7 @@ of failing to control that risk.
     \]
     Rejecting the null hypothesis \(H_i\) is equivalent to accepting \(\lambda_i\)
     as a parameter that successfully controls the risk.
-    Note that this risk function \(R(\lambda)\) does not need to be monotone non-increasing,
-    allowing \gls{ltt} to handle a wider class of risk functions than \gls{crc}.
+    Note that this risk function \(R(\lambda)\) does not need to be monotone non-increasing.
 
     \item Using the calibration set \(\mathcal{D}_{cal}\),
     a p-value \(p_i\) is computed for each null hypothesis \(H_i\).
@@ -494,6 +560,45 @@ Secondly, this hypothesis-testing approach is not constrained
 by the monotonicity of the risk function,
 allowing it to control a wider class of critical performance metrics,
 such as the False Discovery Rate (FDR), which standard CRC cannot.
+
+\subsection{Related Work}
+
+The Learn then Test (LTT) framework provides a general approach to risk control,
+but it is useful to contrast it with other methods that also merge
+conformal inference with multiple testing.
+One alternative is the `Selection by Prediction' framework~\cite{jin2023selection},
+which leverages conformal p-values to control the \gls{fdr}.
+While both frameworks address the challenge of reliably selecting a subset of candidates,
+their underlying methodologies and the nature of their guarantees differ significantly.
+The primary distinction is the level at which hypotheses are tested:
+LTT tests hypotheses about the \emph{overall} risk associated with a parameter choice,
+whereas the Selection by Prediction approach tests hypotheses about each \emph{individual} sample.
+
+This foundational difference dictates the mechanics of each method.
+LTT evaluates the global null hypothesis that the true risk
+for a given parameter \(\lambda\) exceeds a target level \(\alpha\)
+(i.e., \(H_\lambda: R(\lambda) > \alpha\)).
+It computes a p-value for this hypothesis using a concentration inequality
+on the empirical risk of the entire calibration set.
+In contrast, the conformal p-value framework generates a unique p-value for each test point,
+quantifying the evidence that that specific point is `uninteresting'
+(e.g., its true outcome is below a certain threshold).
+This transforms the task into a classic multiple testing problem,
+allowing for the application of powerful statistical procedures
+that control the FDR in expectation.
+
+Consequently, the two frameworks provide different types of statistical assurances.
+By controlling the FWER of its hypothesis tests,
+LTT delivers a high-probability guarantee on the chosen risk,
+ensuring that \(P(Risk \leq \alpha) \geq 1 - \delta\).
+This acts as a `risk ceiling', which is particularly useful in
+safety-critical applications where worst-case performance is a key concern.
+The Selection by Prediction method provides the standard guarantee of
+expected FDR control (\(\mathbb{E}[FDP] \leq q\)).
+Ultimately, LTT stands out as a more general and robust framework,
+capable of controlling any risk function with a high-probability bound,
+while the conformal p-value approach offers a specialized and powerful tool
+specifically designed for controlling the FDR in expectation.
 
 \section{Summary}
 
