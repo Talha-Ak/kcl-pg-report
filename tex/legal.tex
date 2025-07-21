@@ -15,17 +15,6 @@ do not compromise patient safety or wellbeing.
 A misdiagnosis or failure from an AI system
 to identify a critical condition can have dire consequences.
 
-It is therefore imperative that clinicians are not misled by a system's outputs.
-A single output should not be trusted blindly;
-rather, clinicians should augment their decision-making
-with the system's predictions,
-using them as one of many tools in their diagnostic arsenal.
-This is particularly important in the context of chest X-rays,
-where multiple conditions may be present simultaneously,
-and some conditions may be harder to identify than others.
-Providing a prediction set serves as an indication of the system's confidence,
-where a larger set indicates lower confidence, and therefore requires higher scrutiny.
-
 As highlighted repeatedly in this report,
 simple accuracy or coverage metrics are insufficient
 to guarantee patient safety.
@@ -34,7 +23,6 @@ relevant risk metrics like the False Negative Rate (FNR).
 By ensuring that the FNR is controlled at a clinically acceptable level,
 the system can be trusted to not overlook critical conditions,
 thereby safeguarding patient wellbeing.
-
 For the Chest X-ray domain, CRC's `in-expectation' control of the FNR
 was shown to be a significant improvement over standard ICP.
 However, for a patient, it means that while the system is reliable on average,
@@ -45,16 +33,52 @@ provides a more robust assurance.
 It ensures that the system's performance will not degrade beyond the specified level,
 providing a stronger guarantee for clinical use.
 
-\section{Algorithmic Bias}
+\section{Misconceptions and Algorithmic Bias}
 
-The datasets used in this work, while large, are not globally representative.
+A single output should not be trusted blindly;
+rather, clinicians should augment their decision-making
+with the system's predictions,
+using them as one of many tools in their diagnostic arsenal.
+This is particularly important in the context of chest X-rays,
+where multiple conditions may be present simultaneously,
+and some conditions may be harder to identify than others.
+Providing a prediction set serves as an indication of the system's confidence,
+where a larger set indicates lower confidence, and therefore requires higher scrutiny.
+
+Furthermore, safeguarding patients requires that clinicians correctly
+interpret the guarantees provided by these frameworks,
+as common-sense interpretations can be misleading and potentially harmful.
+It is crucial to address two potential misconceptions:
+
+First, there is a subtle distinction in what a prediction set implies.
+The guarantee of conformal prediction is that the procedure will produce a set
+containing the true label with \(1 - \alpha\) probability.
+It is a common pitfall to assume that for a given prediction set,
+any given label within it is correct with high probability.
+The more rigorous and clinically useful interpretation is analogous to a hypothesis test:
+if a label is outside the prediction set, we can conclude that the pathology is absent
+with an error rate controlled by \(\alpha\).
+The labels that remain inside the set are simply those the model cannot confidently rule out.
+This prevents overconfidence in the model's positive predictions
+and encourages appropriate clinical scrutiny.
+
+Second, it is important to clarify the scope of these guarantees.
+The assurances offered by frameworks like ICP and CRC are \emph{marginal},
+meaning they hold on average across the entire patient population.
+This means that while the system may be reliable overall,
+its performance could be systematically worse for specific subgroups
+(e.g., based on age, ethnicity, or the presence of rare comorbidities).
+Additionally, the datasets used in this work, while large, are not globally representative.
 Models trained on these datasets may exhibit biases
 that could lead to unequal performance across different demographic groups.
-An avenue for future work would be group-conditional risk control,
-where the risk is controlled separately for different demographic groups.
-This would allow one to guarantee, for example, that the FNR is controlled
-at a some level (e.g., 10\%) for all demographic groups,
-rather than just on average across the entire population.
+An FNR controlled at 10\% on average is not acceptable
+if it is 30\% for a specific demographic.
+This risk of concentrated error highlights a fundamental limitation of marginal guarantees
+in ensuring equitable and safe care for every individual.
+While LTT's high-probability guarantee offers a more robust 'risk ceiling'
+than CRC's in-expectation guarantee, both are still marginal by default.
+Achieving guarantees that hold for specific patient groups
+requires moving towards conditional guarantees.
 
 \section{Data Privacy and Security}
 
@@ -74,5 +98,3 @@ all external resources have been explicitly cited.
 No claim is made to originality in the datasets or the underlying models,
 but rather the implementation, rigorous comparative evaluation,
 and analysis of conformal methods in the specific context of multi-label chest X-ray classification.
-
-\textcolor{red}{TODO: Does this section need more content?}
