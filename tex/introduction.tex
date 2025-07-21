@@ -20,7 +20,7 @@ as a single radiograph may exhibit multiple concurrent findings.
 In this context, standard classification accuracy often fails to capture the clinical nuances;
 failing to detect a critical condition like Pleural Effusion (fluid build-up around the lungs),
 for example, can have far more severe consequences than
-incorrectly identifying the presence of Pulmonary Nodules (small lumps in the lungs).
+incorrectly identifying the presence of a fracture.
 As a result, developing trustworthy AI tools for \gls{cxr} analysis
 requires methods that go beyond simple accuracy
 and allow for the control of specific, clinically relevant risks.
@@ -53,11 +53,6 @@ However, this fundamental guarantee of \emph{marginal} coverage
 does not distinguish between different types of errors,
 which is a critical limitation in clinical applications.
 
-% TODO: EXPAND ON LTT FROM HERE DOWN
-
-While the general coverage guarantees provided by standard \gls{cp} are broadly useful,
-critical applications like medical diagnosis
-often demand more nuanced control over potential errors.
 As highlighted in the \gls{cxr} example, certain types of mistakes
 (e.g., failing to detect an existing condition)
 are far more detrimental than others.
@@ -66,7 +61,6 @@ which generalises \gls{cp} to control the expected value of a
 user-defined, bounded, monotone loss function.
 This allows a practitioner to directly control a metric
 like the \gls{fnr}, aligning the model's guarantee with domain-specific priorities.
-
 However, the guarantees of CRC are limited by two key assumptions.
 First, the risk is only controlled \emph{in expectation},
 which may not be a strong enough guarantee for safety-critical decisions.
@@ -76,7 +70,7 @@ such as the \gls{fdr}.
 
 To address these limitations, the \gls{ltt} framework was proposed~\cite{angelopoulos2022ltt}.
 By reframing calibration as a multiple hypothesis testing problem,
-LTT can provide a stronger high-probability guarantee on the chosen risk.
+LTT can provide a stronger \emph{high-probability} guarantee on the chosen risk.
 Crucially, it removes the monotonicity requirement,
 empowering it to control any risk function,
 thereby unlocking the ability to manage a wider class of clinically relevant errors.
@@ -85,12 +79,12 @@ The distinct theoretical properties and practical trade-offs between these frame
 motivate a comparative investigation.
 Recognizing the need for guarantees that are both
 statistically valid and clinically meaningful,
-this project undertakes a systematic evaluation of \glsxtrlong{cp},
+this project undertakes a systematic, comparative evaluation of \glsxtrlong{cp},
 \glsxtrlong{crc}, and \glsxtrlong{ltt}
 within the context of multi-label chest X-ray classification.
-By implementing and testing these frameworks on key clinical risks,
-this work aims to provide a clear analysis of their practical strengths,
-limitations, and suitability for deployment in high-stakes environments.
+Focusing on key clinical risks, this work seeks to provide
+a clear analysis into the critical trade-offs
+between the strength of statistical guarantees and predictive utility.
 
 \section{Research Aims \& Objectives}
 \label{sec:aims-objectives}
@@ -142,8 +136,7 @@ The primary aims of this report are to:
         assessing the framework's adaptability to nuanced clinical priorities.
         \item \emph{Generalization Across Models and Datasets}:
         Evaluating the performance and validity of the guarantees provided by all frameworks
-        across different model architectures (e.g., ResNet, DenseNet)
-        and imaging datasets (e.g., CheXpert, NIH ChestX-ray14)
+        across different model architectures and imaging datasets
         to understand their robustness to architectural choices and distribution shifts.
     \end{itemize}
 \end{enumerate}
