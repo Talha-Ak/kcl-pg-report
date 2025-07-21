@@ -1,2 +1,80 @@
 \chapter{Conclusion}
 \label{ch:conclusion}
+
+This project undertook a systematic, comparative evaluation of three conformal prediction frameworks,
+Inductive Conformal Prediction, Conformal Risk Control, and Learn then Test,
+within the safety-critical context of multi-label chest X-ray classification.
+The investigation sought to move beyond standard coverage metrics to control for specific,
+clinically meaningful diagnostic errors,
+providing a clear analysis of the trade-offs between statistical guarantees and predictive utility.
+
+The findings confirm that while baseline class-conditional ICP provides valid per-label coverage,
+it is unsuitable for risk-sensitive applications.
+It yielded a high False Negative Rate (FNR) of approximately 43\%,
+demonstrating that a simple coverage guarantee does not protect
+against the critical error of missing pathologies.
+In contrast, CRC proved highly effective at controlling the FNR by
+consistently keeping the average risk at or below the desired 10\% target,
+demonstrating its value in creating safer clinical AI systems.
+
+A key finding emerged from the attempt to implement a novel,
+clinically-weighted loss function within CRC.
+The experiment revealed a critical limitation of the framework;
+instead of selectively reducing risk for high-priority pathologies,
+the weighted loss increased the FNR across all classes.
+This result occurred because the single, global calibration parameter became overly conservative,
+degrading overall performance.
+This highlights that modifying the loss function in standard CRC
+can have unexpected and system-wide consequences.
+
+The LTT framework successfully addressed the primary limitations of CRC.
+In controlling the FNR, LTT provided a robust high-probability guarantee,
+ensuring that the risk ceiling was violated in fewer than 10\% of trials.
+This is a far stronger assurance than CRC's guarantee in expectation
+and is better suited for clinical use,
+although it came at the cost of slightly larger, less precise prediction sets.
+Crucially, LTT demonstrated its unique capability to control non-monotone risks
+by successfully managing the False Discovery Rate (FDR) at various target levels.
+This extends its utility to addressing important clinical issues like alarm fatigue,
+a task that is fundamentally beyond the scope of CRC.
+The robustness of these frameworks was confirmed across multiple datasets and model architectures,
+and they also proved effective as diagnostic tools for identifying model-task mismatch.
+
+Building on the findings presented, several promising avenues for future research are apparent.
+
+\begin{itemize}
+    \item \textbf{Group-Conditional Risk Control}:
+    As mentioned in the report, a critical next step is to address potential algorithmic bias
+    by extending these frameworks to offer group-conditional guarantees.
+    This would involve controlling risks like the FNR separately
+    for different demographic subgroups,
+    ensuring equitable performance and safety for all patient populations.
+
+    \item \textbf{Multi-Dimensional Risk Control with LTT}:
+    The failure of the weighted loss function in CRC highlighted the limitation
+    of a single calibration parameter.
+    Future work can leverage the LTT framework with a multi-dimensional lambda parameter.
+    This would enable granular risk control by assigning different risk targets
+    to different pathologies based on their clinical severity,
+    allowing the system to be simultaneously strict
+    on critical findings and more lenient on minor ones.
+
+    \item \textbf{Simultaneous Control of Multiple Risks}:
+    Clinical decision-making often requires balancing competing objectives.
+    An important extension would be to configure the LTT framework
+    to simultaneously control both the FNR and the FDR.
+    By defining a multi-risk objective,
+    the system could be calibrated to find prediction sets that,
+    with high probability, both minimize missed pathologies
+    and avoid overwhelming clinicians with excessive false alarms,
+    further enhancing its practical utility and trustworthiness.
+\end{itemize}
+
+In conclusion, this work illuminates a clear hierarchy of conformal methods.
+CRC offers a significant improvement for controlling specific monotone risks,
+but its guarantee is limited to the average case
+and its mechanism is sensitive to global parameter changes.
+LTT provides the most powerful and flexible approach,
+offering stronger high-probability guarantees for any risk function.
+The choice between them presents a clear trade-off between
+the strength of the statistical guarantee and the precision of the clinical output.
