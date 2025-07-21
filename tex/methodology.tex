@@ -83,7 +83,7 @@ The implementation workflow was as follows:
 
     \item \textbf{Model Inference}:
     Where a combination of (dataset, model) has not been previously evaluated,
-    the model is run on the calibration and test sets to generate raw output logits.
+    the model is run on the calibration and test sets.
     For each image \(x\) in the calibration and test sets,
     the model produced a vector of raw output values (logits).
     These were then passed through a Sigmoid activation function to generate a probability score
@@ -110,14 +110,14 @@ from the training data used to pre-train the models,
 by using the same splits and random seeds as used in the library's benchmarks.
 
 The remaining portions of the pipeline were implemented from scratch using
-standard PyTorch and NumPy libraries.
+standard \texttt{pytorch} and \texttt{numpy} libraries.
 
 \section{Implementation of Conformal Frameworks}
 
 \subsection{Inductive Conformal Prediction (ICP)}
 
 To establish a baseline for conformal prediction,
-a class-conditional variant of the Binary Relevance framework was implemented.
+a class-conditional variant was implemented.
 Preliminary investigations revealed that simpler methods using a single,
 globally pooled calibration set were ineffective.
 The wide variance in detection difficulty across the pathologies
@@ -181,9 +181,6 @@ To maintain the \(1-\alpha\) coverage guarantee under this limitation,
 the framework must inherently be more cautious.
 This caution typically manifests as more conservative (i.e., larger) prediction sets
 than what might be achievable by a more complex, dependency-aware model.
-This trade-off is acceptable for the purposes of this project,
-as the primary goal is to evaluate the effectiveness of the risk control frameworks
-rather than to achieve the absolute best performance on the multi-label classification task.
 
 \subsection{Conformal Risk Control}
 
@@ -209,8 +206,10 @@ It is important to note that the author is not a clinician,
 and these weights do not constitute a clinical standard.
 Rather, they serve as a proof-of-concept to demonstrate the capabilities of the methodology.
 
-The weights were determined by categorizing pathologies into tiers based on
-their typical clinical acuity and potential severity if missed~\cite{Kaviani2022Frequency,Gefter2023Commonly}.
+The weighting tiers were guided by clinical literature
+on the frequency and severity of missed findings on CXRs~\cite{Kaviani2022Frequency,Gefter2023Commonly}.
+Pathologies were categorised into tiers based on
+their typical clinical acuity and potential severity if missed.
 Findings that are both acute and of high severity
 (e.g., a potential malignancy or medical emergency)
 were assigned the highest weight, while more chronic or incidental findings received lower weights.
@@ -218,14 +217,18 @@ This tiered approach to clinical risk prioritization is summarized in Table~\ref
 
 \begin{table}
     \centering
-    \begin{tabular}{l l l}
+    \begin{tabular}{l l p{13cm}}
         \toprule
         Tier & Weight & Pathologies \\
         \midrule
-        1 (Critical) & 5 & Mass, Nodule, Lung Lesion, Pneumothorax, Effusion \\
-        2 (High) & 3 & Consolidation, Pneumonia, Edema, Cardiomegaly, Enlarged Cardiomediastinum \\
-        3 (Moderate) & 2 & Fracture, Fibrosis \\
-        4 (Other) & 1 & Hernia \\
+        1 (Critical) & 5 & Mass, Nodule, Lung Lesion \\
+        \addlinespace[0.2em]
+        2 (High) & 3 & Consolidation, Pneumonia, Infiltration, Lung Opacity, Pneumothorax,
+                       Edema, Cardiomegaly, Enlarged Cardiomediastinum, Fracture \\
+        \addlinespace[0.2em]
+        3 (Moderate) & 2 & Fibrosis, Effusion, Hernia \\
+        \addlinespace[0.2em]
+        4 (Other) & 1 & Atelectasis, Emphysema, Pleural Thickening \\
         \bottomrule
     \end{tabular}
     \caption{%
@@ -291,14 +294,14 @@ For each candidate \(\lambda \in \Lambda\),
 a p-value was computed to quantify the statistical evidence against the null hypothesis
 \(H_\lambda: R(\lambda) > \alpha\).
 
-The p-values were calculated using Hoeffding's inequality.
+The p-values were calculated using Hoeffding's inequality~\cite{hoeffding1963Probability}.
 For a given empirical risk \(\hat{R}_n(\lambda)\) computed on a calibration set of size \(n\),
 the p-value is given by:
 \[
     p_\lambda = \exp\left(-2n\left(\max\{0, \alpha - \hat{R}_n(\lambda)\}\right)^2\right)
     \label{eq:hoeffding_pvalue}
 \]
-While more powerful bounds such as the Hoeffding-Bentkus inequality exist
+While more powerful bounds such as the Hoeffding-Bentkus inequality~\cite{bates2021rcps} exist
 and could be used here to potentially increase statistical power,
 the standard Hoeffding bound was chosen for this project
 for its straightforward implementation.
