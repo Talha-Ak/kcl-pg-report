@@ -38,7 +38,7 @@ The experimental design for this project will involve the following components:
 
 \subsection{Datasets}
 
-Two large-scale, publicly available chest X-ray datasets were chosen
+Three large-scale, publicly available chest X-ray datasets were chosen
 to ensure the findings are robust and generalizable:
 \begin{itemize}
     \item \textbf{CheXpert}~\cite{irvin2019chexpert}:
@@ -69,8 +69,8 @@ These models are widely used in the literature and provide a good baseline for c
     \item \emph{DenseNet121}~\cite{huang2017densenet}:
     A 121-layer Densely Connected Convolutional Network that was chosen
     to represent an alternative architectural philosophy.
-    DenseNet connects each layer to every other layer in a feed-forward fashion,
-    promoting feature reuse, improving feature propagation, and often achieving
+    DenseNet connects layers together in a feed-forward manner,
+    improving feature propagation, promoting feature reuse, and often achieving
     high performance with fewer parameters than comparable ResNet models.
 
     \item \emph{Official CheXpert Model}~\cite{irvin2019chexpert}:

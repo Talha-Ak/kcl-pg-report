@@ -307,7 +307,12 @@ the standard Hoeffding bound was chosen for this project
 for its straightforward implementation.
 
 With p-values generated for all candidate hypotheses,
-the Bonferroni correction was applied to control the Family-Wise Error Rate (FWER).
+a fixed-sequence testing procedure was applied
+to control the Family-Wise Error Rate (FWER).
+This sequential method was chosen over the more conservative
+Bonferroni correction to improve statistical power,
+as it is particularly effective when there is
+a natural ordering to the hypotheses being tested.
 
 The output of the LTT calibration is a set, \(\hat{\Lambda}\), of validated \(\lambda\) parameters.
 To generate a single, final prediction for the test set,
